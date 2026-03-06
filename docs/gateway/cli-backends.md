@@ -219,6 +219,21 @@ Override only if needed (common: absolute `command` path).
 ## Troubleshooting
 
 - **CLI not found**: set `command` to a full path.
+  - If the Gateway runs under `systemd`/`launchd`, remember the service PATH may be much smaller than your interactive shell.
+  - On Linux systemd, prefer a drop-in override instead of editing the unit directly:
+
+```ini
+# /etc/systemd/system/openclaw-gateway.service.d/20-path.conf
+[Service]
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/root/.npm-global/bin:/root/.volta/bin:/root/.bun/bin:/root/.local/share/pnpm
+```
+
+Then reload and restart:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart openclaw-gateway.service
+```
 - **Wrong model name**: use `modelAliases` to map `provider/model` → CLI model.
 - **No session continuity**: ensure `sessionArg` is set and `sessionMode` is not
   `none` (Codex CLI currently cannot resume with JSON output).

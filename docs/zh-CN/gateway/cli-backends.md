@@ -208,6 +208,21 @@ OpenClaw 也自带 `codex-cli` 的默认值：
 ## 故障排除
 
 - **找不到 CLI**：将 `command` 设置为完整路径。
+  - 如果 Gateway 运行在 `systemd`/`launchd` 下，要注意服务进程的 PATH 往往比交互式 shell 小得多。
+  - 在 Linux systemd 上，优先使用 drop-in override，而不是直接修改 unit 文件：
+
+```ini
+# /etc/systemd/system/openclaw-gateway.service.d/20-path.conf
+[Service]
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/root/.npm-global/bin:/root/.volta/bin:/root/.bun/bin:/root/.local/share/pnpm
+```
+
+然后重新加载并重启：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart openclaw-gateway.service
+```
 - **模型名称错误**：使用 `modelAliases` 将 `provider/model` 映射到 CLI 模型。
 - **无会话连续性**：确保设置了 `sessionArg` 且 `sessionMode` 不是 `none`（Codex CLI 目前无法使用 JSON 输出恢复）。
 - **图像被忽略**：设置 `imageArg`（并验证 CLI 支持文件路径）。

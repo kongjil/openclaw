@@ -165,6 +165,33 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now openclaw-gateway[-<profile>].service
 ```
 
+If your system service needs extra PATH entries for local CLIs or package managers,
+use a systemd drop-in instead of editing the unit directly:
+
+```ini
+# /etc/systemd/system/openclaw-gateway.service.d/20-path.conf
+[Service]
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/root/.npm-global/bin:/root/.volta/bin:/root/.bun/bin:/root/.local/share/pnpm
+```
+
+Optional hardening / recovery drop-ins are also reasonable for always-on hosts:
+
+```ini
+# /etc/systemd/system/openclaw-gateway.service.d/override.conf
+[Service]
+TimeoutStartSec=2min
+TimeoutStopSec=45s
+OOMPolicy=restart
+```
+
+After adding or changing drop-ins:
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart openclaw-gateway.service
+sudo systemctl cat openclaw-gateway.service
+```
+
   </Tab>
 </Tabs>
 

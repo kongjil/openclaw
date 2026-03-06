@@ -303,6 +303,33 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now openclaw-gateway[-<profile>].service
 ```
 
+如果系统服务需要为本地 CLI 或包管理器补充 PATH，建议使用 systemd drop-in，
+不要直接修改 unit 文件：
+
+```ini
+# /etc/systemd/system/openclaw-gateway.service.d/20-path.conf
+[Service]
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/root/.npm-global/bin:/root/.volta/bin:/root/.bun/bin:/root/.local/share/pnpm
+```
+
+对于常驻主机，也可以增加通用的恢复性 override：
+
+```ini
+# /etc/systemd/system/openclaw-gateway.service.d/override.conf
+[Service]
+TimeoutStartSec=2min
+TimeoutStopSec=45s
+OOMPolicy=restart
+```
+
+新增或修改 drop-in 后：
+
+```
+sudo systemctl daemon-reload
+sudo systemctl restart openclaw-gateway.service
+sudo systemctl cat openclaw-gateway.service
+```
+
 ## Windows（WSL2）
 
 Windows 安装应使用 **WSL2** 并遵循上面的 Linux systemd 部分。
