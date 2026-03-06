@@ -184,6 +184,11 @@ TimeoutStopSec=45s
 OOMPolicy=restart
 ```
 
+Repository examples:
+
+- `scripts/systemd/openclaw-gateway.path.conf.example`
+- `scripts/systemd/openclaw-gateway.override.conf.example`
+
 After adding or changing drop-ins:
 
 ```bash

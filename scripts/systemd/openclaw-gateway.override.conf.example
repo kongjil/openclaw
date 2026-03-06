@@ -1,0 +1,11 @@
+# Example recovery-focused systemd drop-in for OpenClaw Gateway.
+# Install as:
+#   /etc/systemd/system/openclaw-gateway.service.d/override.conf
+# Then run:
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart openclaw-gateway.service
+
+[Service]
+TimeoutStartSec=2min
+TimeoutStopSec=45s
+OOMPolicy=restart

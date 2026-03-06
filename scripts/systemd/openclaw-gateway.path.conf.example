@@ -1,0 +1,9 @@
+# Example systemd drop-in for OpenClaw Gateway PATH overrides.
+# Install as:
+#   /etc/systemd/system/openclaw-gateway.service.d/20-path.conf
+# Then run:
+#   sudo systemctl daemon-reload
+#   sudo systemctl restart openclaw-gateway.service
+
+[Service]
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/root/.local/bin:/root/.npm-global/bin:/root/.volta/bin:/root/.bun/bin:/root/.local/share/pnpm

@@ -322,6 +322,11 @@ TimeoutStopSec=45s
 OOMPolicy=restart
 ```
 
+仓库内示例文件：
+
+- `scripts/systemd/openclaw-gateway.path.conf.example`
+- `scripts/systemd/openclaw-gateway.override.conf.example`
+
 新增或修改 drop-in 后：
 
 ```
