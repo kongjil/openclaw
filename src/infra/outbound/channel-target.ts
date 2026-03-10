@@ -11,14 +11,21 @@ export function applyTargetToParams(params: {
   args: Record<string, unknown>;
 }): void {
   const target = typeof params.args.target === "string" ? params.args.target.trim() : "";
-  const hasLegacyTo = typeof params.args.to === "string";
-  const hasLegacyChannelId = typeof params.args.channelId === "string";
+  // Legacy fields are considered present only when non-empty.
+  // Some tool layers may include empty-string defaults (e.g. channelId: ""),
+  // which should not trigger the legacy-field rejection.
+  const hasLegacyTo = typeof params.args.to === "string" && params.args.to.trim().length > 0;
+  const hasLegacyChannelId =
+    typeof params.args.channelId === "string" && params.args.channelId.trim().length > 0;
   const mode =
     MESSAGE_ACTION_TARGET_MODE[params.action as keyof typeof MESSAGE_ACTION_TARGET_MODE] ?? "none";
 
   if (mode !== "none") {
-    if (hasLegacyTo || hasLegacyChannelId) {
-      throw new Error("Use `target` instead of `to`/`channelId`.");
+    // Allow legacy `to`/`channelId` for internal callers (e.g. announce/delivery) when `target` is not provided.
+    // If `target` is provided, prefer it and ignore legacy fields to avoid ambiguity.
+    if (target) {
+      if (hasLegacyTo) delete (params.args as any).to;
+      if (hasLegacyChannelId) delete (params.args as any).channelId;
     }
   } else if (hasLegacyTo) {
     throw new Error("Use `target` for actions that accept a destination.");
