@@ -188,9 +188,9 @@ describe("sessions view", () => {
 
     const text = container.textContent ?? "";
     expect(text).toContain("75392 / 200000");
-    expect(text).toContain("stored snapshot");
-    expect(text).toContain("live overflow risk");
-    expect(text).toContain("input 389.7k / 200k");
+    expect(text).toContain("已存快照");
+    expect(text).toContain("实时溢出风险");
+    expect(text).toContain("输入 389.7k / 200k");
   });
 
   it("shows live pressure when input tokens are nearing the context window", async () => {
@@ -214,7 +214,7 @@ describe("sessions view", () => {
     await Promise.resolve();
 
     const text = container.textContent ?? "";
-    expect(text).toContain("live pressure");
-    expect(text).toContain("input 190k / 200k");
+    expect(text).toContain("实时压力高");
+    expect(text).toContain("输入 190k / 200k");
   });
 });

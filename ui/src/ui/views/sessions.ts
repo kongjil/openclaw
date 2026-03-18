@@ -208,7 +208,7 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
       ${
         totalStale
           ? html`
-              <div class="session-tokens-cell__meta"><span class="chip chip-warn">stored snapshot</span></div>
+              <div class="session-tokens-cell__meta"><span class="chip chip-warn">已存快照</span></div>
             `
           : nothing
       }
@@ -217,9 +217,9 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
           ? html`
               <div class="session-tokens-cell__meta">
                 <span class=${`chip ${liveOverflow ? "chip-danger" : "chip-warn"}`}>
-                  ${liveOverflow ? "live overflow risk" : "live pressure"}
+                  ${liveOverflow ? "实时溢出风险" : "实时压力高"}
                 </span>
-                <span class="muted">input ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span>
+                <span class="muted">输入 ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span>
               </div>
             `
           : nothing
@@ -228,8 +228,8 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
         liveDivergesFromStored && !livePressure
           ? html`
               <div class="session-tokens-cell__meta">
-                <span class="chip chip-warn">live input higher</span>
-                <span class="muted">input ${formatCompactNumber(input)}</span>
+                <span class="chip chip-warn">实时输入更高</span>
+                <span class="muted">输入 ${formatCompactNumber(input)}</span>
               </div>
             `
           : nothing
