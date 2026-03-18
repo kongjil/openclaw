@@ -41,6 +41,7 @@ function createScrollHost(
     chatScrollTimeout: null as number | null,
     chatHasAutoScrolled: false,
     chatUserNearBottom: true,
+    chatLastScrollTop: null as number | null,
     chatNewMessagesBelow: false,
     logsScrollFrame: null as number | null,
     logsAtBottom: true,
@@ -57,46 +58,72 @@ function createScrollEvent(scrollHeight: number, scrollTop: number, clientHeight
 }
 
 /* ------------------------------------------------------------------ */
-/*  handleChatScroll – threshold tests                                 */
+/*  handleChatScroll – bottom detection tests                          */
 /* ------------------------------------------------------------------ */
 
 describe("handleChatScroll", () => {
-  it("sets chatUserNearBottom=true when within the 450px threshold", () => {
+  it("sets chatUserNearBottom=true when exactly at bottom", () => {
     const { host } = createScrollHost({});
-    // distanceFromBottom = 2000 - 1600 - 400 = 0 → clearly near bottom
+    // distanceFromBottom = 2000 - 1600 - 400 = 0 → pinned to bottom
     const event = createScrollEvent(2000, 1600, 400);
     handleChatScroll(host, event);
     expect(host.chatUserNearBottom).toBe(true);
   });
 
-  it("sets chatUserNearBottom=true when distance is just under threshold", () => {
+  it("keeps chatUserNearBottom=true within tiny bottom epsilon", () => {
     const { host } = createScrollHost({});
-    // distanceFromBottom = 2000 - 1151 - 400 = 449 → just under threshold
-    const event = createScrollEvent(2000, 1151, 400);
+    // distanceFromBottom = 2000 - 1598 - 400 = 2 → still effectively at bottom
+    const event = createScrollEvent(2000, 1598, 400);
     handleChatScroll(host, event);
     expect(host.chatUserNearBottom).toBe(true);
   });
 
-  it("sets chatUserNearBottom=false when distance is exactly at threshold", () => {
+  it("sets chatUserNearBottom=false once user leaves the bottom by more than epsilon", () => {
     const { host } = createScrollHost({});
-    // distanceFromBottom = 2000 - 1150 - 400 = 450 → at threshold (uses strict <)
-    const event = createScrollEvent(2000, 1150, 400);
+    // distanceFromBottom = 2000 - 1597 - 400 = 3 → user has left bottom
+    const event = createScrollEvent(2000, 1597, 400);
     handleChatScroll(host, event);
     expect(host.chatUserNearBottom).toBe(false);
   });
 
-  it("sets chatUserNearBottom=false when scrolled well above threshold", () => {
+  it("releases stickiness as soon as user scrolls upward away from bottom", () => {
     const { host } = createScrollHost({});
-    // distanceFromBottom = 2000 - 500 - 400 = 1100 → way above threshold
+    host.chatUserNearBottom = true;
+    host.chatLastScrollTop = 1600;
+
+    // User lightly scrolls up while still visually close to bottom.
+    const event = createScrollEvent(2000, 1599, 400);
+    handleChatScroll(host, event);
+
+    expect(host.chatUserNearBottom).toBe(false);
+    expect(host.chatLastScrollTop).toBe(1599);
+  });
+
+  it("cancels pending auto-stick retry as soon as user scrolls upward", () => {
+    const { host } = createScrollHost({});
+    host.chatUserNearBottom = true;
+    host.chatLastScrollTop = 1600;
+    host.chatScrollTimeout = window.setTimeout(() => undefined, 120);
+
+    const clearTimeoutSpy = vi.spyOn(window, "clearTimeout");
+    const event = createScrollEvent(2000, 1599, 400);
+    handleChatScroll(host, event);
+
+    expect(clearTimeoutSpy).toHaveBeenCalled();
+    expect(host.chatScrollTimeout).toBe(null);
+    expect(host.chatUserNearBottom).toBe(false);
+  });
+
+  it("sets chatUserNearBottom=false when scrolled well above bottom", () => {
+    const { host } = createScrollHost({});
+    // distanceFromBottom = 2000 - 500 - 400 = 1100 → clearly not at bottom
     const event = createScrollEvent(2000, 500, 400);
     handleChatScroll(host, event);
     expect(host.chatUserNearBottom).toBe(false);
   });
 
-  it("sets chatUserNearBottom=false when user scrolled up past one long message (>200px <450px)", () => {
+  it("clears near-bottom state after user scrolls up past one long message", () => {
     const { host } = createScrollHost({});
-    // distanceFromBottom = 2000 - 1250 - 400 = 350 → old threshold would say "near", new says "near"
-    // distanceFromBottom = 2000 - 1100 - 400 = 500 → old threshold would say "not near", new also "not near"
     const event = createScrollEvent(2000, 1100, 400);
     handleChatScroll(host, event);
     expect(host.chatUserNearBottom).toBe(false);
@@ -134,6 +161,20 @@ describe("scheduleChatScroll", () => {
     await host.updateComplete;
 
     expect(container.scrollTop).toBe(container.scrollHeight);
+  });
+
+  it("does not schedule a delayed retry after auto-scrolling", async () => {
+    const { host } = createScrollHost({
+      scrollHeight: 2000,
+      scrollTop: 1600,
+      clientHeight: 400,
+    });
+    host.chatUserNearBottom = true;
+
+    scheduleChatScroll(host);
+    await host.updateComplete;
+
+    expect(host.chatScrollTimeout).toBe(null);
   });
 
   it("does NOT scroll when user is scrolled up and no force", async () => {
@@ -184,6 +225,23 @@ describe("scheduleChatScroll", () => {
 
     // On initial load, force should work regardless
     expect(container.scrollTop).toBe(container.scrollHeight);
+  });
+
+  it("does NOT scroll when layout leaves user close to bottom but they already scrolled up", async () => {
+    const { host, container } = createScrollHost({
+      scrollHeight: 2000,
+      scrollTop: 1569,
+      clientHeight: 400,
+    });
+    // distanceFromBottom = 31 → previously easy to misclassify as "near bottom" during reflow.
+    host.chatUserNearBottom = false;
+    host.chatHasAutoScrolled = true;
+    const originalScrollTop = container.scrollTop;
+
+    scheduleChatScroll(host);
+    await host.updateComplete;
+
+    expect(container.scrollTop).toBe(originalScrollTop);
   });
 
   it("sets chatNewMessagesBelow when not scrolling due to user position", async () => {

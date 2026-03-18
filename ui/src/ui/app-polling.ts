@@ -1,4 +1,5 @@
 import type { OpenClawApp } from "./app.ts";
+import { loadChatHistory } from "./controllers/chat.ts";
 import { loadDebug } from "./controllers/debug.ts";
 import { loadLogs } from "./controllers/logs.ts";
 import { loadNodes } from "./controllers/nodes.ts";
@@ -7,7 +8,11 @@ type PollingHost = {
   nodesPollInterval: number | null;
   logsPollInterval: number | null;
   debugPollInterval: number | null;
+  chatPollInterval: number | null;
   tab: string;
+  connected: boolean;
+  chatRunId?: string | null;
+  chatLoading?: boolean;
 };
 
 export function startNodesPolling(host: PollingHost) {
@@ -26,6 +31,29 @@ export function stopNodesPolling(host: PollingHost) {
   }
   clearInterval(host.nodesPollInterval);
   host.nodesPollInterval = null;
+}
+
+export function startChatPolling(host: PollingHost) {
+  if (host.chatPollInterval != null) {
+    return;
+  }
+  host.chatPollInterval = window.setInterval(() => {
+    if (host.tab !== "chat" || !host.connected) {
+      return;
+    }
+    if (host.chatRunId || host.chatLoading) {
+      return;
+    }
+    void loadChatHistory(host as unknown as OpenClawApp);
+  }, 2000);
+}
+
+export function stopChatPolling(host: PollingHost) {
+  if (host.chatPollInterval == null) {
+    return;
+  }
+  clearInterval(host.chatPollInterval);
+  host.chatPollInterval = null;
 }
 
 export function startLogsPolling(host: PollingHost) {

@@ -61,6 +61,7 @@ type SettingsHost = {
   basePath: string;
   themeMedia: MediaQueryList | null;
   themeMediaHandler: ((event: MediaQueryListEvent) => void) | null;
+  chatPollInterval: number | null;
   logsPollInterval: number | null;
   debugPollInterval: number | null;
   pendingGatewayUrl?: string | null;
@@ -141,6 +142,7 @@ const createHost = (tab: Tab): SettingsHost => ({
   basePath: "",
   themeMedia: null,
   themeMediaHandler: null,
+  chatPollInterval: null,
   logsPollInterval: null,
   debugPollInterval: null,
   pendingGatewayUrl: null,
@@ -157,15 +159,14 @@ describe("setTabFromRoute", () => {
     vi.unstubAllGlobals();
   });
 
-  it("starts and stops log polling based on the tab", () => {
-    const host = createHost("chat");
-
-    setTabFromRoute(host, "logs");
-    expect(host.logsPollInterval).not.toBeNull();
-    expect(host.debugPollInterval).toBeNull();
+  it("starts and stops chat polling based on the tab", () => {
+    const host = createHost("logs");
 
     setTabFromRoute(host, "chat");
-    expect(host.logsPollInterval).toBeNull();
+    expect(host.chatPollInterval).not.toBeNull();
+
+    setTabFromRoute(host, "logs");
+    expect(host.chatPollInterval).toBeNull();
   });
 
   it("starts and stops debug polling based on the tab", () => {
