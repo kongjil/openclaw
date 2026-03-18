@@ -350,6 +350,87 @@ describe("executeSlashCommand directives", () => {
     });
   });
 
+  it("falls back to chat.send for /model when webchat blocks sessions.patch", async () => {
+    const request = vi.fn(async (method: string, payload?: Record<string, unknown>) => {
+      if (method === "sessions.patch") {
+        throw new Error(
+          "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
+        );
+      }
+      if (method === "sessions.list") {
+        return {
+          defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: null },
+          sessions: [row("main", { modelProvider: "openai", model: "gpt-5" })],
+        };
+      }
+      if (method === "chat.send") {
+        expect(payload).toMatchObject({
+          sessionKey: "main",
+          message: "/model gpt-5-mini",
+          deliver: false,
+        });
+        return { ok: true };
+      }
+      throw new Error(`unexpected method: ${method}`);
+    });
+
+    const result = await executeSlashCommand(
+      { request } as unknown as GatewayBrowserClient,
+      "main",
+      "model",
+      "gpt-5-mini",
+    );
+
+    expect(request).toHaveBeenNthCalledWith(1, "sessions.patch", {
+      key: "main",
+      model: "gpt-5-mini",
+    });
+    expect(request).toHaveBeenNthCalledWith(2, "sessions.list", {});
+    expect(request).toHaveBeenNthCalledWith(
+      3,
+      "chat.send",
+      expect.objectContaining({
+        sessionKey: "main",
+        message: "/model gpt-5-mini",
+        deliver: false,
+      }),
+    );
+    expect(result.content).toBe("Model set to `gpt-5-mini`.");
+    expect(result.sessionPatch?.modelOverride).toEqual({
+      kind: "qualified",
+      value: "openai/gpt-5-mini",
+    });
+  });
+
+  it("returns the fallback chat.send error for /model when both paths fail", async () => {
+    const request = vi.fn(async (method: string, _payload?: Record<string, unknown>) => {
+      if (method === "sessions.patch") {
+        throw new Error(
+          "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
+        );
+      }
+      if (method === "sessions.list") {
+        return {
+          defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: null },
+          sessions: [row("main", { modelProvider: "openai", model: "gpt-5" })],
+        };
+      }
+      if (method === "chat.send") {
+        throw new Error("GatewayRequestError: overloaded");
+      }
+      throw new Error(`unexpected method: ${method}`);
+    });
+
+    const result = await executeSlashCommand(
+      { request } as unknown as GatewayBrowserClient,
+      "main",
+      "model",
+      "gpt-5-mini",
+    );
+
+    expect(result.content).toBe("Failed to set model: Error: GatewayRequestError: overloaded");
+  });
+
   it("reuses a provided model catalog for /model updates without refetching", async () => {
     const request = vi.fn(async (method: string, _payload?: unknown) => {
       if (method === "sessions.patch") {

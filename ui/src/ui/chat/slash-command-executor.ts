@@ -157,25 +157,65 @@ async function executeModel(
     }
   }
 
+  const requestedModel = args.trim();
+  const isChatSendFallbackError = (err: unknown) =>
+    String(err).includes("use chat.send for session-scoped updates");
+
   try {
     const [patched, resolvedModelCatalog] = await Promise.all([
       client.request<SessionsPatchResult>("sessions.patch", {
         key: sessionKey,
-        model: args.trim(),
+        model: requestedModel,
       }),
       modelCatalog
         ? Promise.resolve(modelCatalog)
         : loadModelCatalog(client, { allowFailure: true }),
     ]);
     const resolvedValue = resolvePreferredServerChatModel(
-      patched.resolved?.model ?? args.trim(),
+      patched.resolved?.model ?? requestedModel,
       patched.resolved?.modelProvider,
       resolvedModelCatalog,
     ).value;
     return {
-      content: `Model set to \`${args.trim()}\`.`,
+      content: `Model set to \`${requestedModel}\`.`,
       action: "refresh",
       sessionPatch: { modelOverride: createChatModelOverride(resolvedValue) },
+    };
+  } catch (err) {
+    if (!isChatSendFallbackError(err)) {
+      return { content: `Failed to set model: ${String(err)}` };
+    }
+  }
+
+  try {
+    const sessions = await client.request<SessionsListResult>("sessions.list", {});
+    const session = resolveCurrentSession(sessions, sessionKey);
+    const defaultModel = resolvePreferredServerChatModel(
+      sessions?.defaults?.model,
+      sessions?.defaults?.modelProvider,
+      modelCatalog,
+    ).value;
+    const targetModel = requestedModel || defaultModel;
+    if (!targetModel) {
+      return { content: "Failed to set model: No default model is available for /model reset." };
+    }
+
+    await client.request("chat.send", {
+      sessionKey,
+      message: `/model ${targetModel}`,
+      deliver: false,
+      idempotencyKey: crypto.randomUUID(),
+    });
+
+    const nextOverride = createChatModelOverride(
+      requestedModel ||
+        defaultModel ||
+        resolvePreferredServerChatModel(session?.model, session?.modelProvider, modelCatalog).value,
+    );
+    return {
+      content: `Model set to \`${targetModel}\`.`,
+      action: "refresh",
+      sessionPatch: { modelOverride: nextOverride },
     };
   } catch (err) {
     return { content: `Failed to set model: ${String(err)}` };
