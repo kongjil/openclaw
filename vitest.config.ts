@@ -1,7 +1,7 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { defineConfig } from "vitest/config";
-import { pluginSdkSubpaths } from "./scripts/lib/plugin-sdk-entries.mjs";
 import { resolveLocalVitestMaxWorkers } from "./scripts/test-planner/runtime-profile.mjs";
 import {
   behaviorManifestPath,
@@ -17,6 +17,42 @@ const isCI = process.env.CI === "true" || process.env.GITHUB_ACTIONS === "true";
 const isWindows = process.platform === "win32";
 const localWorkers = resolveLocalVitestMaxWorkers();
 const ciWorkers = isWindows ? 2 : 3;
+
+// Keep this ordered: the base `openclaw/plugin-sdk` alias is a prefix match.
+const fallbackPluginSdkSubpaths = [
+  "account-id",
+  "command-auth",
+  "config-paths",
+  "core",
+  "fetch-auth",
+  "file-lock",
+  "group-access",
+  "json-store",
+  "llm-task",
+  "onboarding",
+  "pairing-access",
+  "persistent-dedupe",
+  "provider-auth-result",
+  "reply-payload",
+  "run-command",
+  "runtime",
+  "slack-message-actions",
+  "ssrf-policy",
+  "status-helpers",
+  "temp-path",
+  "text-chunking",
+  "tool-send",
+  "voice-call",
+  "webhook-path",
+  "webhook-targets",
+] as const;
+
+const pluginSdkEntriesPath = path.join(repoRoot, "scripts", "lib", "plugin-sdk-entries.mjs");
+const pluginSdkSubpaths = existsSync(pluginSdkEntriesPath)
+  ? ((await import(pathToFileURL(pluginSdkEntriesPath).href))
+      .pluginSdkSubpaths as readonly string[])
+  : fallbackPluginSdkSubpaths;
+
 export default defineConfig({
   resolve: {
     // Keep this ordered: the base `openclaw/plugin-sdk` alias is a prefix match.
