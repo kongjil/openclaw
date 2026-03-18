@@ -115,6 +115,9 @@ function applyControlUiSecurityHeaders(res: ServerResponse) {
   res.setHeader("Content-Security-Policy", buildControlUiCspHeader());
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("Referrer-Policy", "no-referrer");
+  // Control UI includes browser-native voice input, so allow microphone only
+  // for this origin while keeping camera/geolocation disabled.
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(self), geolocation=()");
 }
 
 function sendJson(res: ServerResponse, status: number, body: unknown) {

@@ -123,6 +123,10 @@ describe("handleControlUiHttpRequest", () => {
         );
         expect(handled).toBe(true);
         expect(setHeader).toHaveBeenCalledWith("X-Frame-Options", "DENY");
+        expect(setHeader).toHaveBeenCalledWith(
+          "Permissions-Policy",
+          "camera=(), microphone=(self), geolocation=()",
+        );
         const csp = setHeader.mock.calls.find((call) => call[0] === "Content-Security-Policy")?.[1];
         expect(typeof csp).toBe("string");
         expect(String(csp)).toContain("frame-ancestors 'none'");
