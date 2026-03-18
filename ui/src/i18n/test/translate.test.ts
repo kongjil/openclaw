@@ -56,6 +56,34 @@ describe("i18n", () => {
     expect(translate.t("common.health")).toBe("健康状况");
   });
 
+  it("ignores stale async locale loads when a newer locale wins", async () => {
+    const registry = await import("../lib/registry.ts");
+    const original = registry.loadLazyLocaleTranslation;
+    const deferredResolvers = new Map<
+      string,
+      (value: Awaited<ReturnType<typeof original>>) => void
+    >();
+
+    vi.spyOn(registry, "loadLazyLocaleTranslation").mockImplementation(
+      (locale: Parameters<typeof original>[0]) =>
+        new Promise((resolve) => {
+          deferredResolvers.set(locale, resolve);
+        }),
+    );
+
+    const slowZh = translate.i18n.setLocale("zh-CN");
+    const fastTw = translate.i18n.setLocale("zh-TW");
+
+    deferredResolvers.get("zh-TW")?.(zh_TW);
+    await fastTw;
+    expect(translate.i18n.getLocale()).toBe("zh-TW");
+
+    deferredResolvers.get("zh-CN")?.(zh_CN);
+    await slowZh;
+    expect(translate.i18n.getLocale()).toBe("zh-TW");
+    expect(translate.t("common.health")).toBe("健康");
+  });
+
   it("loads saved non-English locale on startup", async () => {
     vi.resetModules();
     vi.stubGlobal("localStorage", createStorageMock());
