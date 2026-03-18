@@ -9,6 +9,7 @@ import { WebSocketServer } from "ws";
 import {
   decorateOpenClawProfile,
   ensureProfileCleanExit,
+  findChromeExecutableLinux,
   findChromeExecutableMac,
   findChromeExecutableWindows,
   isChromeCdpReady,
@@ -257,6 +258,13 @@ describe("browser chrome helpers", () => {
     const exe = findChromeExecutableWindows();
     expect(exe?.kind).toBe("chrome");
     expect(exe?.path).toMatch(/chrome\.exe$/);
+    exists.mockRestore();
+  });
+
+  it("finds Chromium in /usr/local/bin on Linux", () => {
+    const exists = mockExistsSync((pathValue) => pathValue === "/usr/local/bin/chromium");
+    const exe = findChromeExecutableLinux();
+    expect(exe).toEqual({ kind: "chromium", path: "/usr/local/bin/chromium" });
     exists.mockRestore();
   });
 
