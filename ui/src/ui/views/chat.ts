@@ -298,7 +298,7 @@ function renderContextNotice(
   if (session?.totalTokensFresh === false) {
     return nothing;
   }
-  const used = session?.totalTokens ?? 0;
+  const used = session?.totalTokens ?? session?.inputTokens ?? 0;
   const limit = session?.contextTokens ?? defaultContextTokens ?? 0;
   if (!used || !limit) {
     return nothing;

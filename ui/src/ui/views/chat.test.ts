@@ -453,6 +453,72 @@ describe("chat view", () => {
     expect(groupedLogo?.getAttribute("src")).toBe("/openclaw/favicon.svg");
   });
 
+  it("uses totalTokens instead of inflated inputTokens for the context warning", () => {
+    const container = document.createElement("div");
+    render(
+      renderChat(
+        createProps({
+          sessions: {
+            ts: 0,
+            path: "",
+            count: 1,
+            defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: 200_000 },
+            sessions: [
+              {
+                key: "main",
+                kind: "direct",
+                updatedAt: Date.now(),
+                modelProvider: "openai",
+                model: "gpt-5",
+                inputTokens: 389_700,
+                totalTokens: 176_217,
+                contextTokens: 200_000,
+              },
+            ],
+          },
+        }),
+      ),
+      container,
+    );
+
+    const notice = container.querySelector(".context-notice");
+    expect(notice?.textContent).toContain("88% context used");
+    expect(notice?.textContent).toContain("176.2k / 200k");
+    expect(notice?.textContent).not.toContain("389.7k / 200k");
+  });
+
+  it("falls back to inputTokens for the context warning when totalTokens is unavailable", () => {
+    const container = document.createElement("div");
+    render(
+      renderChat(
+        createProps({
+          sessions: {
+            ts: 0,
+            path: "",
+            count: 1,
+            defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: 200_000 },
+            sessions: [
+              {
+                key: "main",
+                kind: "direct",
+                updatedAt: Date.now(),
+                modelProvider: "openai",
+                model: "gpt-5",
+                inputTokens: 190_000,
+                contextTokens: 200_000,
+              },
+            ],
+          },
+        }),
+      ),
+      container,
+    );
+
+    const notice = container.querySelector(".context-notice");
+    expect(notice?.textContent).toContain("95% context used");
+    expect(notice?.textContent).toContain("190k / 200k");
+  });
+
   it("keeps the persisted overview locale selected before i18n hydration finishes", async () => {
     const container = document.createElement("div");
     const props = createOverviewProps({
