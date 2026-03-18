@@ -191,6 +191,19 @@ function formatCompactNumber(value: number): string {
   return String(value);
 }
 
+function sessionTokenStatusTitle(kind: "stale" | "pressure" | "overflow" | "higher"): string {
+  switch (kind) {
+    case "stale":
+      return "这是最近一次保存下来的 token 快照，不一定等于当前这轮实时请求的上下文大小。";
+    case "pressure":
+      return "当前实时输入已经接近上下文上限；虽然未必已经溢出，但继续增长就可能出问题。";
+    case "overflow":
+      return "当前实时输入已经超过上下文窗口；即使前面的总量数字看起来没满，这条会话也可能已经非常危险。";
+    case "higher":
+      return "当前实时输入明显高于已保存的总量快照，说明表格里的总量数字偏滞后。";
+  }
+}
+
 function renderSessionTokenCell(row: GatewaySessionRow) {
   const total = row.totalTokens ?? null;
   const input = row.inputTokens ?? null;
@@ -208,7 +221,9 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
       ${
         totalStale
           ? html`
-              <div class="session-tokens-cell__meta"><span class="chip chip-warn">已存快照</span></div>
+              <div class="session-tokens-cell__meta">
+                <span class="chip chip-warn" title=${sessionTokenStatusTitle("stale")}>已存快照</span>
+              </div>
             `
           : nothing
       }
@@ -216,10 +231,16 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
         livePressure
           ? html`
               <div class="session-tokens-cell__meta">
-                <span class=${`chip ${liveOverflow ? "chip-danger" : "chip-warn"}`}>
+                <span
+                  class=${`chip ${liveOverflow ? "chip-danger" : "chip-warn"}`}
+                  title=${sessionTokenStatusTitle(liveOverflow ? "overflow" : "pressure")}
+                >
                   ${liveOverflow ? "实时溢出风险" : "实时压力高"}
                 </span>
-                <span class="muted">输入 ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span>
+                <span
+                  class="muted"
+                  title="这里显示的是本轮实时输入 token 与上下文窗口上限的对比。"
+                >输入 ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span>
               </div>
             `
           : nothing
@@ -228,8 +249,8 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
         liveDivergesFromStored && !livePressure
           ? html`
               <div class="session-tokens-cell__meta">
-                <span class="chip chip-warn">实时输入更高</span>
-                <span class="muted">输入 ${formatCompactNumber(input)}</span>
+                <span class="chip chip-warn" title=${sessionTokenStatusTitle("higher")}>实时输入更高</span>
+                <span class="muted" title="这里显示的是当前实时输入 token。">输入 ${formatCompactNumber(input)}</span>
               </div>
             `
           : nothing
