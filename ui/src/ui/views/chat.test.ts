@@ -880,6 +880,201 @@ describe("chat view", () => {
     vi.unstubAllGlobals();
   });
 
+  it("falls back to chat.send model switches when sessions.patch is blocked for webchat", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+      } satisfies Partial<Response>),
+    );
+    const { state, request } = createChatHeaderState();
+    request.mockImplementation(async (method: string, params: Record<string, unknown>) => {
+      if (method === "sessions.patch") {
+        throw new Error(
+          "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
+        );
+      }
+      if (method === "chat.send") {
+        expect(params).toMatchObject({
+          sessionKey: "main",
+          message: "/model openai/gpt-5-mini",
+          deliver: false,
+        });
+        state.sessionsResult = {
+          ...(state.sessionsResult as NonNullable<typeof state.sessionsResult>),
+          sessions: [
+            {
+              key: "main",
+              kind: "direct",
+              updatedAt: null,
+              modelProvider: "openai",
+              model: "gpt-5-mini",
+            },
+          ],
+        };
+        return { ok: true };
+      }
+      if (method === "sessions.list") {
+        return state.sessionsResult;
+      }
+      if (method === "models.list") {
+        return { models: state.chatModelCatalog };
+      }
+      if (method === "chat.history") {
+        return { messages: [], thinkingLevel: null };
+      }
+      throw new Error(`Unexpected request: ${method}`);
+    });
+
+    const container = document.createElement("div");
+    render(renderChatSessionSelect(state), container);
+
+    const modelSelect = container.querySelector<HTMLSelectElement>(
+      'select[data-chat-model-select="true"]',
+    );
+    expect(modelSelect).not.toBeNull();
+
+    modelSelect!.value = "openai/gpt-5-mini";
+    modelSelect!.dispatchEvent(new Event("change", { bubbles: true }));
+    await flushTasks();
+
+    expect(request).toHaveBeenCalledWith("sessions.patch", {
+      key: "main",
+      model: "openai/gpt-5-mini",
+    });
+    expect(request).toHaveBeenCalledWith(
+      "chat.send",
+      expect.objectContaining({
+        sessionKey: "main",
+        message: "/model openai/gpt-5-mini",
+        deliver: false,
+      }),
+    );
+    expect(state.lastError).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it("falls back to chat.send with the default model when clearing an override in webchat", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+      } satisfies Partial<Response>),
+    );
+    const { state, request } = createChatHeaderState({ model: "gpt-5-mini" });
+    request.mockImplementation(async (method: string, params: Record<string, unknown>) => {
+      if (method === "sessions.patch") {
+        throw new Error(
+          "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
+        );
+      }
+      if (method === "chat.send") {
+        expect(params).toMatchObject({
+          sessionKey: "main",
+          message: "/model openai/gpt-5",
+          deliver: false,
+        });
+        state.sessionsResult = {
+          ...(state.sessionsResult as NonNullable<typeof state.sessionsResult>),
+          sessions: [
+            {
+              key: "main",
+              kind: "direct",
+              updatedAt: null,
+              modelProvider: null,
+              model: null,
+            },
+          ],
+        };
+        return { ok: true };
+      }
+      if (method === "sessions.list") {
+        return state.sessionsResult;
+      }
+      if (method === "models.list") {
+        return { models: state.chatModelCatalog };
+      }
+      if (method === "chat.history") {
+        return { messages: [], thinkingLevel: null };
+      }
+      throw new Error(`Unexpected request: ${method}`);
+    });
+
+    const container = document.createElement("div");
+    render(renderChatSessionSelect(state), container);
+
+    const modelSelect = container.querySelector<HTMLSelectElement>(
+      'select[data-chat-model-select="true"]',
+    );
+    expect(modelSelect).not.toBeNull();
+
+    modelSelect!.value = "";
+    modelSelect!.dispatchEvent(new Event("change", { bubbles: true }));
+    await flushTasks();
+
+    expect(request).toHaveBeenCalledWith(
+      "chat.send",
+      expect.objectContaining({
+        sessionKey: "main",
+        message: "/model openai/gpt-5",
+        deliver: false,
+      }),
+    );
+    expect(state.lastError).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
+  it("rolls the picker back when both sessions.patch and chat.send model switching fail", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+      } satisfies Partial<Response>),
+    );
+    const { state, request } = createChatHeaderState();
+    request.mockImplementation(async (method: string, _params: Record<string, unknown>) => {
+      if (method === "sessions.patch") {
+        throw new Error(
+          "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
+        );
+      }
+      if (method === "chat.send") {
+        throw new Error("GatewayRequestError: model switch failed");
+      }
+      if (method === "sessions.list") {
+        return state.sessionsResult;
+      }
+      if (method === "models.list") {
+        return { models: state.chatModelCatalog };
+      }
+      if (method === "chat.history") {
+        return { messages: [], thinkingLevel: null };
+      }
+      throw new Error(`Unexpected request: ${method}`);
+    });
+
+    const container = document.createElement("div");
+    render(renderChatSessionSelect(state), container);
+
+    const modelSelect = container.querySelector<HTMLSelectElement>(
+      'select[data-chat-model-select="true"]',
+    );
+    expect(modelSelect).not.toBeNull();
+    expect(modelSelect?.value).toBe("");
+
+    modelSelect!.value = "openai/gpt-5-mini";
+    modelSelect!.dispatchEvent(new Event("change", { bubbles: true }));
+    await flushTasks();
+    render(renderChatSessionSelect(state), container);
+
+    const rerendered = container.querySelector<HTMLSelectElement>(
+      'select[data-chat-model-select="true"]',
+    );
+    expect(rerendered?.value).toBe("");
+    expect(state.lastError).toContain("Failed to set model");
+    vi.unstubAllGlobals();
+  });
+
   it("disables the chat header model picker while a run is active", () => {
     const { state } = createChatHeaderState();
     state.chatRunId = "run-123";

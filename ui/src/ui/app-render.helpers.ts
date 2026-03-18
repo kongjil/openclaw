@@ -526,6 +526,29 @@ async function refreshSessionOptions(state: AppViewState) {
   });
 }
 
+function isChatSendSessionMutationFallbackError(err: unknown): boolean {
+  const message = String(err);
+  return message.includes("use chat.send for session-scoped updates");
+}
+
+async function sendChatModelSwitchCommand(
+  state: AppViewState,
+  sessionKey: string,
+  nextModel: string,
+): Promise<void> {
+  const { defaultValue } = resolveChatModelSelectState(state);
+  const targetModel = nextModel || defaultValue;
+  if (!targetModel) {
+    throw new Error("No default model is available for /model reset.");
+  }
+  await state.client!.request("chat.send", {
+    sessionKey,
+    message: `/model ${targetModel}`,
+    deliver: false,
+    idempotencyKey: crypto.randomUUID(),
+  });
+}
+
 function renderChatModelSelect(state: AppViewState) {
   const { currentOverride, defaultLabel, options } = resolveChatModelSelectState(state);
   const busy =
@@ -581,9 +604,18 @@ async function switchChatModel(state: AppViewState, nextModel: string) {
     void refreshVisibleToolsEffectiveForCurrentSession(state);
     await refreshSessionOptions(state);
   } catch (err) {
-    // Roll back so the picker reflects the actual server model.
-    state.chatModelOverrides = { ...state.chatModelOverrides, [targetSessionKey]: prevOverride };
-    state.lastError = `Failed to set model: ${String(err)}`;
+    try {
+      if (!isChatSendSessionMutationFallbackError(err)) {
+        throw err;
+      }
+      await sendChatModelSwitchCommand(state, targetSessionKey, nextModel);
+      void refreshVisibleToolsEffectiveForCurrentSession(state);
+      await refreshSessionOptions(state);
+    } catch (fallbackErr) {
+      // Roll back so the picker reflects the actual server model.
+      state.chatModelOverrides = { ...state.chatModelOverrides, [targetSessionKey]: prevOverride };
+      state.lastError = `Failed to set model: ${String(fallbackErr)}`;
+    }
   }
 }
 
