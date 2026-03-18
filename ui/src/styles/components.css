@@ -2176,6 +2176,22 @@ td.data-table-key-col {
   height: 14px;
 }
 
+.session-tokens-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.session-tokens-cell__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+
 /* Pagination */
 .data-table-pagination {
   display: flex;

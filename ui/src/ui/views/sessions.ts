@@ -181,6 +181,63 @@ function paginateRows<T>(rows: T[], page: number, pageSize: number): T[] {
   return rows.slice(start, start + pageSize);
 }
 
+function formatCompactNumber(value: number): string {
+  if (value >= 1_000_000) {
+    return `${(value / 1_000_000).toFixed(1).replace(/\.0$/, "")}M`;
+  }
+  if (value >= 1_000) {
+    return `${(value / 1_000).toFixed(1).replace(/\.0$/, "")}k`;
+  }
+  return String(value);
+}
+
+function renderSessionTokenCell(row: GatewaySessionRow) {
+  const total = row.totalTokens ?? null;
+  const input = row.inputTokens ?? null;
+  const context = row.contextTokens ?? null;
+  const totalStale = total != null && row.totalTokensFresh === false;
+  const livePressureRatio = input != null && context ? input / context : 0;
+  const livePressure = input != null && context != null && livePressureRatio >= 0.85;
+  const liveOverflow = input != null && context != null && input > context;
+  const liveDivergesFromStored =
+    total != null && input != null && input > Math.max(total * 1.25, total + 20_000);
+
+  return html`
+    <div class="session-tokens-cell">
+      <div>${formatSessionTokens(row)}</div>
+      ${
+        totalStale
+          ? html`
+              <div class="session-tokens-cell__meta"><span class="chip chip-warn">stored snapshot</span></div>
+            `
+          : nothing
+      }
+      ${
+        livePressure
+          ? html`
+              <div class="session-tokens-cell__meta">
+                <span class=${`chip ${liveOverflow ? "chip-danger" : "chip-warn"}`}>
+                  ${liveOverflow ? "live overflow risk" : "live pressure"}
+                </span>
+                <span class="muted">input ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span>
+              </div>
+            `
+          : nothing
+      }
+      ${
+        liveDivergesFromStored && !livePressure
+          ? html`
+              <div class="session-tokens-cell__meta">
+                <span class="chip chip-warn">live input higher</span>
+                <span class="muted">input ${formatCompactNumber(input)}</span>
+              </div>
+            `
+          : nothing
+      }
+    </div>
+  `;
+}
+
 export function renderSessions(props: SessionsProps) {
   const rawRows = props.result?.sessions ?? [];
   const filtered = filterRows(rawRows, props.searchQuery);
@@ -511,7 +568,7 @@ function renderRow(
         <span class="data-table-badge ${badgeClass}">${row.kind}</span>
       </td>
       <td>${updated}</td>
-      <td>${formatSessionTokens(row)}</td>
+      <td>${renderSessionTokenCell(row)}</td>
       <td>
         <select
           ?disabled=${disabled}

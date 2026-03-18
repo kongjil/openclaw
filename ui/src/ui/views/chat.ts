@@ -189,6 +189,34 @@ function adjustTextareaHeight(el: HTMLTextAreaElement) {
   el.style.height = `${Math.min(el.scrollHeight, 150)}px`;
 }
 
+function syncChatScrollRail(thread: HTMLElement | null) {
+  if (!thread) {
+    return;
+  }
+  const shell = thread.closest(".chat-thread-shell");
+  const rail = shell?.querySelector<HTMLInputElement>(".chat-scroll-rail");
+  const railWrap = shell?.querySelector<HTMLElement>(".chat-scroll-rail-wrap");
+  if (!rail || !railWrap) {
+    return;
+  }
+  const maxScroll = Math.max(thread.scrollHeight - thread.clientHeight, 0);
+  const hasOverflow = maxScroll > 0;
+  railWrap.hidden = !hasOverflow;
+  rail.disabled = !hasOverflow;
+  rail.value = hasOverflow ? String(Math.round((thread.scrollTop / maxScroll) * 1000)) : "0";
+}
+
+function handleChatScrollRailInput(event: Event) {
+  const rail = event.currentTarget as HTMLInputElement;
+  const shell = rail.closest(".chat-thread-shell");
+  const thread = shell?.querySelector<HTMLElement>(".chat-thread");
+  if (!thread) {
+    return;
+  }
+  const maxScroll = Math.max(thread.scrollHeight - thread.clientHeight, 0);
+  thread.scrollTop = maxScroll * (Number(rail.value) / 1000);
+}
+
 function renderCompactionIndicator(status: CompactionIndicatorStatus | null | undefined) {
   if (!status) {
     return nothing;
@@ -936,104 +964,129 @@ export function renderChat(props: ChatProps) {
   const isEmpty = chatItems.length === 0 && !props.loading;
 
   const thread = html`
-    <div
-      class="chat-thread"
-      role="log"
-      aria-live="polite"
-      @scroll=${props.onChatScroll}
-      @click=${handleCodeBlockCopy}
-    >
-      <div class="chat-thread-inner">
-        ${props.loading
-          ? html`
-              <div class="chat-loading-skeleton" aria-label="Loading chat">
-                <div class="chat-line assistant">
-                  <div class="chat-msg">
-                    <div class="chat-bubble">
-                      <div
-                        class="skeleton skeleton-line skeleton-line--long"
-                        style="margin-bottom: 8px"
-                      ></div>
-                      <div
-                        class="skeleton skeleton-line skeleton-line--medium"
-                        style="margin-bottom: 8px"
-                      ></div>
-                      <div class="skeleton skeleton-line skeleton-line--short"></div>
+    <div class="chat-thread-shell">
+      <div
+        class="chat-thread"
+        role="log"
+        aria-live="polite"
+        ${ref((el) => syncChatScrollRail(el as HTMLElement | null))}
+        @scroll=${(event: Event) => {
+          props.onChatScroll?.(event);
+          syncChatScrollRail(event.currentTarget as HTMLElement);
+        }}
+        @click=${handleCodeBlockCopy}
+      >
+        <div class="chat-thread-inner">
+          ${props.loading
+            ? html`
+                <div class="chat-loading-skeleton" aria-label="Loading chat">
+                  <div class="chat-line assistant">
+                    <div class="chat-msg">
+                      <div class="chat-bubble">
+                        <div
+                          class="skeleton skeleton-line skeleton-line--long"
+                          style="margin-bottom: 8px"
+                        ></div>
+                        <div
+                          class="skeleton skeleton-line skeleton-line--medium"
+                          style="margin-bottom: 8px"
+                        ></div>
+                        <div class="skeleton skeleton-line skeleton-line--short"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="chat-line user" style="margin-top: 12px">
+                    <div class="chat-msg">
+                      <div class="chat-bubble">
+                        <div class="skeleton skeleton-line skeleton-line--medium"></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="chat-line assistant" style="margin-top: 12px">
+                    <div class="chat-msg">
+                      <div class="chat-bubble">
+                        <div
+                          class="skeleton skeleton-line skeleton-line--long"
+                          style="margin-bottom: 8px"
+                        ></div>
+                        <div class="skeleton skeleton-line skeleton-line--short"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div class="chat-line user" style="margin-top: 12px">
-                  <div class="chat-msg">
-                    <div class="chat-bubble">
-                      <div class="skeleton skeleton-line skeleton-line--medium"></div>
-                    </div>
+              `
+            : nothing}
+          ${isEmpty && !vs.searchOpen ? renderWelcomeState(props) : nothing}
+          ${isEmpty && vs.searchOpen
+            ? html` <div class="agent-chat__empty">No matching messages</div> `
+            : nothing}
+          ${repeat(
+            chatItems,
+            (item) => item.key,
+            (item) => {
+              if (item.kind === "divider") {
+                return html`
+                  <div class="chat-divider" role="separator" data-ts=${String(item.timestamp)}>
+                    <span class="chat-divider__line"></span>
+                    <span class="chat-divider__label">${item.label}</span>
+                    <span class="chat-divider__line"></span>
                   </div>
-                </div>
-                <div class="chat-line assistant" style="margin-top: 12px">
-                  <div class="chat-msg">
-                    <div class="chat-bubble">
-                      <div
-                        class="skeleton skeleton-line skeleton-line--long"
-                        style="margin-bottom: 8px"
-                      ></div>
-                      <div class="skeleton skeleton-line skeleton-line--short"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `
-          : nothing}
-        ${isEmpty && !vs.searchOpen ? renderWelcomeState(props) : nothing}
-        ${isEmpty && vs.searchOpen
-          ? html` <div class="agent-chat__empty">No matching messages</div> `
-          : nothing}
-        ${repeat(
-          chatItems,
-          (item) => item.key,
-          (item) => {
-            if (item.kind === "divider") {
-              return html`
-                <div class="chat-divider" role="separator" data-ts=${String(item.timestamp)}>
-                  <span class="chat-divider__line"></span>
-                  <span class="chat-divider__label">${item.label}</span>
-                  <span class="chat-divider__line"></span>
-                </div>
-              `;
-            }
-            if (item.kind === "reading-indicator") {
-              return renderReadingIndicatorGroup(assistantIdentity, props.basePath);
-            }
-            if (item.kind === "stream") {
-              return renderStreamingGroup(
-                item.text,
-                item.startedAt,
-                props.onOpenSidebar,
-                assistantIdentity,
-                props.basePath,
-              );
-            }
-            if (item.kind === "group") {
-              if (deleted.has(item.key)) {
-                return nothing;
+                `;
               }
-              return renderMessageGroup(item, {
-                onOpenSidebar: props.onOpenSidebar,
-                showReasoning,
-                showToolCalls: props.showToolCalls,
-                assistantName: props.assistantName,
-                assistantAvatar: assistantIdentity.avatar,
-                basePath: props.basePath,
-                contextWindow:
-                  activeSession?.contextTokens ?? props.sessions?.defaults?.contextTokens ?? null,
-                onDelete: () => {
-                  deleted.delete(item.key);
-                  requestUpdate();
-                },
-              });
-            }
-            return nothing;
-          },
-        )}
+              if (item.kind === "reading-indicator") {
+                return renderReadingIndicatorGroup(assistantIdentity, props.basePath);
+              }
+              if (item.kind === "stream") {
+                return renderStreamingGroup(
+                  item.text,
+                  item.startedAt,
+                  props.onOpenSidebar,
+                  assistantIdentity,
+                  props.basePath,
+                );
+              }
+              if (item.kind === "group") {
+                if (deleted.has(item.key)) {
+                  return nothing;
+                }
+                return renderMessageGroup(item, {
+                  onOpenSidebar: props.onOpenSidebar,
+                  showReasoning,
+                  showToolCalls: props.showToolCalls,
+                  assistantName: props.assistantName,
+                  assistantAvatar: assistantIdentity.avatar,
+                  basePath: props.basePath,
+                  contextWindow:
+                    activeSession?.contextTokens ?? props.sessions?.defaults?.contextTokens ?? null,
+                  onDelete: () => {
+                    deleted.delete(item.key);
+                    requestUpdate();
+                  },
+                });
+              }
+              return nothing;
+            },
+          )}
+        </div>
+      </div>
+      <div class="chat-scroll-rail-wrap" hidden>
+        <input
+          class="chat-scroll-rail"
+          type="range"
+          min="0"
+          max="1000"
+          step="1"
+          value="0"
+          aria-label="Chat timeline"
+          @input=${handleChatScrollRailInput}
+          ${ref((el) => {
+            const rail = el as HTMLInputElement | null;
+            const thread = rail
+              ?.closest(".chat-thread-shell")
+              ?.querySelector<HTMLElement>(".chat-thread");
+            syncChatScrollRail(thread ?? null);
+          })}
+        />
       </div>
     </div>
   `;

@@ -165,4 +165,56 @@ describe("sessions view", () => {
     expect(onDeselectAll).not.toHaveBeenCalled();
     expect(onSelectPage).not.toHaveBeenCalled();
   });
+
+  it("shows live overflow risk when input tokens exceed the context window", async () => {
+    const container = document.createElement("div");
+    render(
+      renderSessions(
+        buildProps(
+          buildResult({
+            key: "agent:main:telegram:direct:1824254227",
+            kind: "direct",
+            updatedAt: Date.now(),
+            totalTokens: 75_392,
+            totalTokensFresh: false,
+            inputTokens: 389_700,
+            contextTokens: 200_000,
+          }),
+        ),
+      ),
+      container,
+    );
+    await Promise.resolve();
+
+    const text = container.textContent ?? "";
+    expect(text).toContain("75392 / 200000");
+    expect(text).toContain("stored snapshot");
+    expect(text).toContain("live overflow risk");
+    expect(text).toContain("input 389.7k / 200k");
+  });
+
+  it("shows live pressure when input tokens are nearing the context window", async () => {
+    const container = document.createElement("div");
+    render(
+      renderSessions(
+        buildProps(
+          buildResult({
+            key: "agent:main:main",
+            kind: "direct",
+            updatedAt: Date.now(),
+            totalTokens: 75_392,
+            totalTokensFresh: true,
+            inputTokens: 190_000,
+            contextTokens: 200_000,
+          }),
+        ),
+      ),
+      container,
+    );
+    await Promise.resolve();
+
+    const text = container.textContent ?? "";
+    expect(text).toContain("live pressure");
+    expect(text).toContain("input 190k / 200k");
+  });
 });

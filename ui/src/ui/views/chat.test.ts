@@ -425,6 +425,29 @@ describe("chat view", () => {
     expect(logoImage?.getAttribute("src")).toBe("/openclaw/favicon.svg");
   });
 
+  it("renders a draggable chat timeline rail beside the thread", () => {
+    const container = document.createElement("div");
+    render(
+      renderChat(
+        createProps({
+          messages: [
+            {
+              role: "assistant",
+              content: "hello",
+              timestamp: 1000,
+            },
+          ],
+        }),
+      ),
+      container,
+    );
+
+    const rail = container.querySelector<HTMLInputElement>(".chat-scroll-rail");
+    expect(rail).not.toBeNull();
+    expect(rail?.getAttribute("type")).toBe("range");
+    expect(rail?.getAttribute("aria-label")).toBe("Chat timeline");
+  });
+
   it("keeps grouped assistant avatar fallbacks under the mounted base path", () => {
     const container = document.createElement("div");
     render(
