@@ -140,8 +140,6 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "lcov"],
-      // Keep coverage stable without an ever-growing exclude list:
-      // only count files actually exercised by the test suite.
       all: false,
       thresholds: {
         lines: 70,
@@ -149,17 +147,13 @@ export default defineConfig({
         branches: 55,
         statements: 70,
       },
-      // Anchor to repo-root `src/` only. Without this, coverage globs can
-      // unintentionally match nested `*/src/**` folders (extensions, apps, etc).
       include: ["./src/**/*.ts"],
       exclude: [
-        // Never count workspace packages/apps toward core coverage thresholds.
         "extensions/**",
         "apps/**",
         "ui/**",
         "test/**",
         "src/**/*.test.ts",
-        // Entrypoints and wiring (covered by CI smoke + manual/e2e flows).
         "src/entry.ts",
         "src/index.ts",
         "src/runtime.ts",
@@ -170,8 +164,6 @@ export default defineConfig({
         "src/daemon/**",
         "src/hooks/**",
         "src/macos/**",
-
-        // Large integration surfaces; validated via e2e/manual/contract tests.
         "src/acp/**",
         "src/agents/**",
         "src/channels/**",
@@ -181,8 +173,6 @@ export default defineConfig({
         "src/node-host/**",
         "src/plugins/**",
         "src/providers/**",
-
-        // Some agent integrations are intentionally validated via manual/e2e runs.
         "src/agents/model-scan.ts",
         "src/agents/pi-embedded-runner.ts",
         "src/agents/sandbox-paths.ts",
@@ -191,16 +181,12 @@ export default defineConfig({
         "src/agents/pi-tool-definition-adapter.ts",
         "src/agents/tools/discord-actions*.ts",
         "src/agents/tools/slack-actions.ts",
-
-        // Hard-to-unit-test modules; exercised indirectly by integration tests.
         "src/infra/state-migrations.ts",
         "src/infra/skills-remote.ts",
         "src/infra/update-check.ts",
         "src/infra/ports-inspect.ts",
         "src/infra/outbound/outbound-session.ts",
         "src/memory/batch-gemini.ts",
-
-        // Gateway server integration surfaces are intentionally validated via manual/e2e runs.
         "src/gateway/control-ui.ts",
         "src/gateway/server-bridge.ts",
         "src/gateway/server-channels.ts",
@@ -210,15 +196,11 @@ export default defineConfig({
         "src/gateway/server-methods/talk.ts",
         "src/gateway/server-methods/web.ts",
         "src/gateway/server-methods/wizard.ts",
-
-        // Process bridges are hard to unit-test in isolation.
         "src/gateway/call.ts",
         "src/process/tau-rpc.ts",
         "src/process/exec.ts",
-        // Interactive UIs/flows are intentionally validated via manual/e2e runs.
         "src/tui/**",
         "src/wizard/**",
-        // Channel surfaces are largely integration-tested (or manually validated).
         "src/browser/**",
         "src/channels/web/**",
         "src/webchat/**",

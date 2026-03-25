@@ -104,6 +104,17 @@ package-lock.json
 .agent/
 skills-lock.json
 
+# OpenClaw local runtime state
+.openclaw/
+.remote_known_hosts
+HEARTBEAT.md
+
+# Ephemeral local admin / rescue scripts and temp creds
+*_remote.sh
+ssh_askpass.sh
+tmp_ssh_pw.py
+tmpkeys/
+
 # Local iOS signing overrides
 apps/ios/LocalSigning.xcconfig
 

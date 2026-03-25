@@ -18,7 +18,8 @@ export async function maybeSeedControlUiAllowedOriginsAtStartup(params: {
     params.log.info(buildSeededOriginsInfoLog(seeded.seededOrigins, seeded.bind));
   } catch (err) {
     params.log.warn(
-      `gateway: failed to persist gateway.controlUi.allowedOrigins seed: ${String(err)}. The gateway will start with the in-memory value but config was not saved.`,
+      `gateway: failed to persist gateway.controlUi.allowedOrigins seed: ${String(err)}. ` +
+        "The gateway will start with the in-memory value but config was not saved, so the seed will be lost on restart unless you fix config write access and save the same origins.",
     );
   }
   return seeded.config;

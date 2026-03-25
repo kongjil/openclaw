@@ -114,21 +114,12 @@ vi.mock("../plugins/hook-runner-global.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../plugins/runtime/runtime-discord.js", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../plugins/runtime/runtime-discord.js")>();
+vi.mock("../plugin-sdk/discord.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../plugin-sdk/discord.js")>();
   return {
     ...actual,
-    createRuntimeDiscord: () => {
-      const runtime = actual.createRuntimeDiscord();
-      return {
-        ...runtime,
-        threadBindings: {
-          ...runtime.threadBindings,
-          unbindBySessionKey: (params: unknown) =>
-            threadBindingMocks.unbindThreadBindingsBySessionKey(params),
-        },
-      };
-    },
+    unbindThreadBindingsBySessionKey: (params: unknown) =>
+      threadBindingMocks.unbindThreadBindingsBySessionKey(params),
   };
 });
 

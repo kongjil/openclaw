@@ -11,6 +11,18 @@ import { ErrorCodes, errorShape } from "../protocol/index.js";
 import { broadcastPresenceSnapshot } from "../server/presence-events.js";
 import type { GatewayRequestHandlers } from "./types.js";
 
+function isHeartbeatSystemNoise(text: string): boolean {
+  const lower = text.trim().toLowerCase();
+  if (!lower) {
+    return false;
+  }
+  return (
+    lower.startsWith("read heartbeat.md") ||
+    lower.includes("heartbeat poll") ||
+    lower.includes("heartbeat wake")
+  );
+}
+
 export const systemHandlers: GatewayRequestHandlers = {
   "gateway.identity.get": ({ respond }) => {
     const identity = loadOrCreateDeviceIdentity();
@@ -136,7 +148,7 @@ export const systemHandlers: GatewayRequestHandlers = {
           });
         }
       }
-    } else {
+    } else if (!isHeartbeatSystemNoise(text)) {
       enqueueSystemEvent(text, { sessionKey });
     }
     broadcastPresenceSnapshot({
