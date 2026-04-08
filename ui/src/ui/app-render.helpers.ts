@@ -1,11 +1,12 @@
 import { html, nothing } from "lit";
+import { live } from "lit/directives/live.js";
 import { repeat } from "lit/directives/repeat.js";
 import { parseAgentSessionKey } from "../../../src/sessions/session-key-utils.js";
 import { t } from "../i18n/index.ts";
 import { refreshChat } from "./app-chat.ts";
 import { syncUrlWithSessionKey } from "./app-settings.ts";
 import type { AppViewState } from "./app-view-state.ts";
-import { OpenClawApp } from "./app.ts";
+import type { OpenClawApp } from "./app.ts";
 import { createChatModelOverride } from "./chat-model-ref.ts";
 import {
   resolveChatModelOverrideValue,
@@ -536,8 +537,8 @@ async function sendChatModelSwitchCommand(
   sessionKey: string,
   nextModel: string,
 ): Promise<void> {
-  const { defaultValue } = resolveChatModelSelectState(state);
-  const targetModel = nextModel || defaultValue;
+  const { defaultModel } = resolveChatModelSelectState(state);
+  const targetModel = nextModel || defaultModel;
   if (!targetModel) {
     throw new Error("No default model is available for /model reset.");
   }
@@ -560,6 +561,7 @@ function renderChatModelSelect(state: AppViewState) {
       <select
         data-chat-model-select="true"
         aria-label="Chat model"
+        .value=${live(currentOverride)}
         ?disabled=${disabled}
         @change=${async (e: Event) => {
           const next = (e.target as HTMLSelectElement).value.trim();

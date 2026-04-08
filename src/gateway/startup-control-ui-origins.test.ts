@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import type { OpenClawConfig } from "../config/config.js";
 import { maybeSeedControlUiAllowedOriginsAtStartup } from "./startup-control-ui-origins.js";
 
 describe("maybeSeedControlUiAllowedOriginsAtStartup", () => {
@@ -12,7 +13,7 @@ describe("maybeSeedControlUiAllowedOriginsAtStartup", () => {
         bind: "lan",
         port: 18789,
       },
-    };
+    } satisfies OpenClawConfig;
 
     const result = await maybeSeedControlUiAllowedOriginsAtStartup({
       config,
@@ -51,7 +52,7 @@ describe("maybeSeedControlUiAllowedOriginsAtStartup", () => {
           bind: "lan",
           port: 18789,
         },
-      },
+      } satisfies OpenClawConfig,
       writeConfig,
       log: { info, warn },
     });

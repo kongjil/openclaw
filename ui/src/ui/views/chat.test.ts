@@ -306,7 +306,7 @@ describe("chat view", () => {
     expect(container.textContent).not.toContain("757.3k / 200k");
   });
 
-  it("hides the context notice when totalTokens is missing even if inputTokens is high", () => {
+  it("falls back to inputTokens for the context warning when totalTokens is unavailable", () => {
     const container = document.createElement("div");
     render(
       renderChat(
@@ -331,7 +331,8 @@ describe("chat view", () => {
       container,
     );
 
-    expect(container.textContent).not.toContain("context used");
+    expect(container.textContent).toContain("100% context used");
+    expect(container.textContent).toContain("500k / 200k");
   });
 
   it("hides the context notice when totalTokens is marked stale", () => {
@@ -1070,8 +1071,8 @@ describe("chat view", () => {
               key: "main",
               kind: "direct",
               updatedAt: null,
-              modelProvider: null,
-              model: null,
+              modelProvider: undefined,
+              model: undefined,
             },
           ],
         };
@@ -1120,7 +1121,7 @@ describe("chat view", () => {
         ok: false,
       } satisfies Partial<Response>),
     );
-    const { state, request } = createChatHeaderState();
+    const { state, request } = createChatHeaderState({ model: "gpt-5-mini" });
     request.mockImplementation(async (method: string, _params: Record<string, unknown>) => {
       if (method === "sessions.patch") {
         throw new Error(
@@ -1149,9 +1150,9 @@ describe("chat view", () => {
       'select[data-chat-model-select="true"]',
     );
     expect(modelSelect).not.toBeNull();
-    expect(modelSelect?.value).toBe("");
+    expect(modelSelect?.value).toBe("openai/gpt-5-mini");
 
-    modelSelect!.value = "openai/gpt-5-mini";
+    modelSelect!.value = "openai/gpt-5";
     modelSelect!.dispatchEvent(new Event("change", { bubbles: true }));
     await flushTasks();
     render(renderChatSessionSelect(state), container);
@@ -1159,7 +1160,7 @@ describe("chat view", () => {
     const rerendered = container.querySelector<HTMLSelectElement>(
       'select[data-chat-model-select="true"]',
     );
-    expect(rerendered?.value).toBe("");
+    expect(rerendered?.value).toBe("openai/gpt-5-mini");
     expect(state.lastError).toContain("Failed to set model");
     vi.unstubAllGlobals();
   });

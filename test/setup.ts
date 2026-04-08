@@ -43,12 +43,6 @@ if (process.getMaxListeners() > 0 && process.getMaxListeners() < TEST_PROCESS_MA
   process.setMaxListeners(TEST_PROCESS_MAX_LISTENERS);
 }
 
-import { resetContextWindowCacheForTest } from "../src/agents/context.js";
-import { resetModelsJsonReadyCacheForTest } from "../src/agents/models-config.js";
-import {
-  drainSessionWriteLockStateForTest,
-  resetSessionWriteLockStateForTest,
-} from "../src/agents/session-write-lock.js";
 import { createTopLevelChannelReplyToModeResolver } from "../src/channels/plugins/threading-helpers.js";
 import type {
   ChannelId,
@@ -60,15 +54,58 @@ import type { OutboundSendDeps } from "../src/infra/outbound/deliver.js";
 import { installProcessWarningFilter } from "../src/infra/warning-filter.js";
 import type { PluginRegistry } from "../src/plugins/registry.js";
 import { createTestRegistry } from "../src/test-utils/channel-plugins.js";
-import { cleanupSessionStateForTest } from "../src/test-utils/session-state-cleanup.js";
-import { withIsolatedTestHome } from "./test-env.js";
 
-// Set HOME/state isolation before importing any runtime OpenClaw modules.
-const testEnv = withIsolatedTestHome();
+const testEnv = { cleanup: () => {}, tempHome: "" };
 
 installProcessWarningFilter();
 
 const REGISTRY_STATE = Symbol.for("openclaw.pluginRegistryState");
+
+let cleanupSessionStateForTestPromise: Promise<(() => Promise<void>) | null> | null = null;
+
+type NodeResetHelpers = {
+  resetContextWindowCacheForTest: () => void;
+  resetModelsJsonReadyCacheForTest: () => void;
+  resetSessionWriteLockStateForTest: () => void;
+  drainSessionWriteLockStateForTest: () => Promise<void>;
+};
+
+let nodeResetHelpersPromise: Promise<NodeResetHelpers | null> | null = null;
+
+function isJsdomEnvironment(): boolean {
+  return typeof window !== "undefined" && typeof document !== "undefined";
+}
+
+async function loadCleanupSessionStateForTest(): Promise<(() => Promise<void>) | null> {
+  if (isJsdomEnvironment()) {
+    return null;
+  }
+  if (!cleanupSessionStateForTestPromise) {
+    cleanupSessionStateForTestPromise = import("../src/test-utils/session-state-cleanup.js").then(
+      (mod) => mod.cleanupSessionStateForTest,
+    );
+  }
+  return cleanupSessionStateForTestPromise;
+}
+
+async function loadNodeResetHelpers(): Promise<NodeResetHelpers | null> {
+  if (isJsdomEnvironment()) {
+    return null;
+  }
+  if (!nodeResetHelpersPromise) {
+    nodeResetHelpersPromise = Promise.all([
+      import("../src/agents/context.js"),
+      import("../src/agents/models-config.js"),
+      import("../src/agents/session-write-lock.js"),
+    ]).then(([contextMod, modelsMod, sessionWriteLockMod]) => ({
+      resetContextWindowCacheForTest: contextMod.resetContextWindowCacheForTest,
+      resetModelsJsonReadyCacheForTest: modelsMod.resetModelsJsonReadyCacheForTest,
+      resetSessionWriteLockStateForTest: sessionWriteLockMod.resetSessionWriteLockStateForTest,
+      drainSessionWriteLockStateForTest: sessionWriteLockMod.drainSessionWriteLockStateForTest,
+    }));
+  }
+  return nodeResetHelpersPromise;
+}
 
 type RegistryState = {
   registry: PluginRegistry | null;
@@ -323,10 +360,12 @@ beforeAll(() => {
 });
 
 afterEach(async () => {
-  await cleanupSessionStateForTest();
-  resetContextWindowCacheForTest();
-  resetModelsJsonReadyCacheForTest();
-  resetSessionWriteLockStateForTest();
+  const cleanupSessionStateForTest = await loadCleanupSessionStateForTest();
+  await cleanupSessionStateForTest?.();
+  const nodeResetHelpers = await loadNodeResetHelpers();
+  nodeResetHelpers?.resetContextWindowCacheForTest();
+  nodeResetHelpers?.resetModelsJsonReadyCacheForTest();
+  nodeResetHelpers?.resetSessionWriteLockStateForTest();
   if (globalRegistryState.registry !== DEFAULT_PLUGIN_REGISTRY) {
     installDefaultPluginRegistry();
     globalRegistryState.key = null;
@@ -335,7 +374,9 @@ afterEach(async () => {
 });
 
 afterAll(async () => {
-  await cleanupSessionStateForTest();
-  await drainSessionWriteLockStateForTest();
+  const cleanupSessionStateForTest = await loadCleanupSessionStateForTest();
+  await cleanupSessionStateForTest?.();
+  const nodeResetHelpers = await loadNodeResetHelpers();
+  await nodeResetHelpers?.drainSessionWriteLockStateForTest?.();
   testEnv.cleanup();
 });

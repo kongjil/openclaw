@@ -188,12 +188,18 @@ async function executeModel(
   }
 
   try {
-    const sessions = await client.request<SessionsListResult>("sessions.list", {});
+    const [sessions, resolvedFallbackCatalog] = await Promise.all([
+      client.request<SessionsListResult>("sessions.list", {}),
+      modelCatalog
+        ? Promise.resolve(modelCatalog)
+        : loadModelCatalog(client, { allowFailure: true }).catch(() => [] as ModelCatalogEntry[]),
+    ]);
+    const fallbackCatalog = resolvedFallbackCatalog ?? [];
     const session = resolveCurrentSession(sessions, sessionKey);
     const defaultModel = resolvePreferredServerChatModel(
       sessions?.defaults?.model,
       sessions?.defaults?.modelProvider,
-      modelCatalog,
+      fallbackCatalog,
     ).value;
     const targetModel = requestedModel || defaultModel;
     if (!targetModel) {
@@ -207,10 +213,16 @@ async function executeModel(
       idempotencyKey: crypto.randomUUID(),
     });
 
+    const resolvedRequestedModel = resolvePreferredServerChatModel(
+      requestedModel,
+      null,
+      fallbackCatalog,
+    ).value;
     const nextOverride = createChatModelOverride(
-      requestedModel ||
+      resolvedRequestedModel ||
         defaultModel ||
-        resolvePreferredServerChatModel(session?.model, session?.modelProvider, modelCatalog).value,
+        resolvePreferredServerChatModel(session?.model, session?.modelProvider, fallbackCatalog)
+          .value,
     );
     return {
       content: `Model set to \`${targetModel}\`.`,

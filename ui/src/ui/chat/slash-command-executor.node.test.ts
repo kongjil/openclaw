@@ -357,6 +357,9 @@ describe("executeSlashCommand directives", () => {
           "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
         );
       }
+      if (method === "models.list") {
+        return { models: createModelCatalog(OPENAI_GPT5_MINI_MODEL) };
+      }
       if (method === "sessions.list") {
         return {
           defaults: { modelProvider: "openai", model: "gpt-5", contextTokens: null },
@@ -385,9 +388,9 @@ describe("executeSlashCommand directives", () => {
       key: "main",
       model: "gpt-5-mini",
     });
-    expect(request).toHaveBeenNthCalledWith(2, "sessions.list", {});
-    expect(request).toHaveBeenNthCalledWith(
-      3,
+    expect(request).toHaveBeenCalledWith("models.list", {});
+    expect(request).toHaveBeenCalledWith("sessions.list", {});
+    expect(request).toHaveBeenCalledWith(
       "chat.send",
       expect.objectContaining({
         sessionKey: "main",
@@ -408,6 +411,9 @@ describe("executeSlashCommand directives", () => {
         throw new Error(
           "GatewayRequestError: webchat clients cannot patch sessions; use chat.send for session-scoped updates",
         );
+      }
+      if (method === "models.list") {
+        return { models: createModelCatalog(OPENAI_GPT5_MINI_MODEL) };
       }
       if (method === "sessions.list") {
         return {
