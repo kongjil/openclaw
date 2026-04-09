@@ -45,10 +45,10 @@ export type SkillsProps = {
 type StatusTabDef = { id: SkillsStatusFilter; label: string };
 
 const STATUS_TABS: StatusTabDef[] = [
-  { id: "all", label: "All" },
-  { id: "ready", label: "Ready" },
-  { id: "needs-setup", label: "Needs Setup" },
-  { id: "disabled", label: "Disabled" },
+  { id: "all", label: "全部" },
+  { id: "ready", label: "就绪" },
+  { id: "needs-setup", label: "需配置" },
+  { id: "disabled", label: "已禁用" },
 ];
 
 function skillMatchesStatus(skill: SkillStatusEntry, status: SkillsStatusFilter): boolean {
@@ -111,8 +111,8 @@ export function renderSkills(props: SkillsProps) {
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Skills</div>
-          <div class="card-sub">Installed skills and their status.</div>
+          <div class="card-title">技能</div>
+          <div class="card-sub">已安装技能及其状态。</div>
         </div>
         <button
           class="btn"
@@ -145,19 +145,19 @@ export function renderSkills(props: SkillsProps) {
           href="https://clawhub.com"
           target="_blank"
           rel="noreferrer"
-          title="Browse skills on ClawHub"
-          >Browse Skills Store</a
+          title="在 ClawHub 浏览技能"
+          >浏览技能商店</a
         >
         <label class="field" style="flex: 1; min-width: 180px;">
           <input
             .value=${props.filter}
             @input=${(e: Event) => props.onFilterChange((e.target as HTMLInputElement).value)}
-            placeholder="Search skills"
+            placeholder="搜索技能"
             autocomplete="off"
             name="skills-filter"
           />
         </label>
-        <div class="muted">${filtered.length} shown</div>
+        <div class="muted">显示 ${filtered.length} 条</div>
       </div>
 
       ${props.error
@@ -166,9 +166,7 @@ export function renderSkills(props: SkillsProps) {
       ${filtered.length === 0
         ? html`
             <div class="muted" style="margin-top: 16px">
-              ${!props.connected && !props.report
-                ? "Not connected to gateway."
-                : "No skills found."}
+              ${!props.connected && !props.report ? "未连接到网关。" : "未找到技能。"}
             </div>
           `
         : html`
@@ -334,7 +332,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                 <div style="display: grid; gap: 8px;">
                   <div class="field">
                     <span
-                      >API key
+                      >API Key
                       <span class="muted" style="font-weight: normal; font-size: 0.88em;"
                         >(${skill.primaryEnv})</span
                       ></span
@@ -350,7 +348,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                     const href = safeExternalHref(skill.homepage);
                     return href
                       ? html`<div class="muted" style="font-size: 13px;">
-                          Get your key:
+                          获取密钥：
                           <a href="${href}" target="_blank" rel="noopener noreferrer"
                             >${skill.homepage}</a
                           >
@@ -362,7 +360,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                     ?disabled=${busy}
                     @click=${() => props.onSaveKey(skill.skillKey)}
                   >
-                    Save key
+                    保存密钥
                   </button>
                 </div>
               `
@@ -371,7 +369,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
           <div
             style="border-top: 1px solid var(--border); padding-top: 12px; display: grid; gap: 6px; font-size: 12px; color: var(--muted);"
           >
-            <div><span style="font-weight: 600;">Source:</span> ${skill.source}</div>
+            <div><span style="font-weight: 600;">来源：</span> ${skill.source}</div>
             <div style="font-family: var(--mono); word-break: break-all;">${skill.filePath}</div>
             ${(() => {
               const safeHref = safeExternalHref(skill.homepage);

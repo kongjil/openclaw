@@ -52,13 +52,13 @@ export type SessionsProps = {
 const THINK_LEVELS = ["", "off", "minimal", "low", "medium", "high", "xhigh"] as const;
 const BINARY_THINK_LEVELS = ["", "off", "on"] as const;
 const VERBOSE_LEVELS = [
-  { value: "", label: "inherit" },
-  { value: "off", label: "off (explicit)" },
+  { value: "", label: "继承" },
+  { value: "off", label: "off（显式）" },
   { value: "on", label: "on" },
   { value: "full", label: "full" },
 ] as const;
 const FAST_LEVELS = [
-  { value: "", label: "inherit" },
+  { value: "", label: "继承" },
   { value: "on", label: "on" },
   { value: "off", label: "off" },
 ] as const;
@@ -218,43 +218,40 @@ function renderSessionTokenCell(row: GatewaySessionRow) {
   return html`
     <div class="session-tokens-cell">
       <div>${formatSessionTokens(row)}</div>
-      ${
-        totalStale
-          ? html`
-              <div class="session-tokens-cell__meta">
-                <span class="chip chip-warn" title=${sessionTokenStatusTitle("stale")}>已存快照</span>
-              </div>
-            `
-          : nothing
-      }
-      ${
-        livePressure
-          ? html`
-              <div class="session-tokens-cell__meta">
-                <span
-                  class=${`chip ${liveOverflow ? "chip-danger" : "chip-warn"}`}
-                  title=${sessionTokenStatusTitle(liveOverflow ? "overflow" : "pressure")}
-                >
-                  ${liveOverflow ? "实时溢出风险" : "实时压力高"}
-                </span>
-                <span
-                  class="muted"
-                  title="这里显示的是本轮实时输入 token 与上下文窗口上限的对比。"
-                >输入 ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span>
-              </div>
-            `
-          : nothing
-      }
-      ${
-        liveDivergesFromStored && !livePressure
-          ? html`
-              <div class="session-tokens-cell__meta">
-                <span class="chip chip-warn" title=${sessionTokenStatusTitle("higher")}>实时输入更高</span>
-                <span class="muted" title="这里显示的是当前实时输入 token。">输入 ${formatCompactNumber(input)}</span>
-              </div>
-            `
-          : nothing
-      }
+      ${totalStale
+        ? html`
+            <div class="session-tokens-cell__meta">
+              <span class="chip chip-warn" title=${sessionTokenStatusTitle("stale")}>已存快照</span>
+            </div>
+          `
+        : nothing}
+      ${livePressure
+        ? html`
+            <div class="session-tokens-cell__meta">
+              <span
+                class=${`chip ${liveOverflow ? "chip-danger" : "chip-warn"}`}
+                title=${sessionTokenStatusTitle(liveOverflow ? "overflow" : "pressure")}
+              >
+                ${liveOverflow ? "实时溢出风险" : "实时压力高"}
+              </span>
+              <span class="muted" title="这里显示的是本轮实时输入 token 与上下文窗口上限的对比。"
+                >输入 ${formatCompactNumber(input)} / ${formatCompactNumber(context)}</span
+              >
+            </div>
+          `
+        : nothing}
+      ${liveDivergesFromStored && !livePressure
+        ? html`
+            <div class="session-tokens-cell__meta">
+              <span class="chip chip-warn" title=${sessionTokenStatusTitle("higher")}
+                >实时输入更高</span
+              >
+              <span class="muted" title="这里显示的是当前实时输入 token。"
+                >输入 ${formatCompactNumber(input)}</span
+              >
+            </div>
+          `
+        : nothing}
     </div>
   `;
 }
@@ -292,21 +289,19 @@ export function renderSessions(props: SessionsProps) {
     <section class="card">
       <div class="row" style="justify-content: space-between; margin-bottom: 12px;">
         <div>
-          <div class="card-title">Sessions</div>
+          <div class="card-title">会话</div>
           <div class="card-sub">
-            ${props.result
-              ? `Store: ${props.result.path}`
-              : "Active session keys and per-session overrides."}
+            ${props.result ? `存储位置：${props.result.path}` : "活跃会话 key 与逐会话覆盖项。"}
           </div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "Loading…" : "Refresh"}
+          ${props.loading ? "加载中…" : "刷新"}
         </button>
       </div>
 
       <div class="filters" style="margin-bottom: 12px;">
         <label class="field-inline">
-          <span>Active</span>
+          <span>活跃</span>
           <input
             style="width: 72px;"
             placeholder="min"
@@ -321,7 +316,7 @@ export function renderSessions(props: SessionsProps) {
           />
         </label>
         <label class="field-inline">
-          <span>Limit</span>
+          <span>上限</span>
           <input
             style="width: 64px;"
             .value=${props.limit}
@@ -346,7 +341,7 @@ export function renderSessions(props: SessionsProps) {
                 includeUnknown: props.includeUnknown,
               })}
           />
-          <span>Global</span>
+          <span>全局</span>
         </label>
         <label class="field-inline checkbox">
           <input
@@ -360,7 +355,7 @@ export function renderSessions(props: SessionsProps) {
                 includeUnknown: (e.target as HTMLInputElement).checked,
               })}
           />
-          <span>Unknown</span>
+          <span>未知</span>
         </label>
       </div>
 
@@ -373,7 +368,7 @@ export function renderSessions(props: SessionsProps) {
           <div class="data-table-search">
             <input
               type="text"
-              placeholder="Filter by key, label, kind…"
+              placeholder="按 key、标签、类型筛选…"
               .value=${props.searchQuery}
               @input=${(e: Event) => props.onSearchChange((e.target as HTMLInputElement).value)}
             />
@@ -383,14 +378,14 @@ export function renderSessions(props: SessionsProps) {
         ${props.selectedKeys.size > 0
           ? html`
               <div class="data-table-bulk-bar">
-                <span>${props.selectedKeys.size} selected</span>
-                <button class="btn btn--sm" @click=${props.onDeselectAll}>Unselect</button>
+                <span>已选 ${props.selectedKeys.size} 项</span>
+                <button class="btn btn--sm" @click=${props.onDeselectAll}>取消选择</button>
                 <button
                   class="btn btn--sm danger"
                   ?disabled=${props.loading}
                   @click=${props.onDeleteSelected}
                 >
-                  ${icons.trash} Delete
+                  ${icons.trash} 删除
                 </button>
               </div>
             `
@@ -416,13 +411,13 @@ export function renderSessions(props: SessionsProps) {
                             props.onSelectPage(paginated.map((r) => r.key));
                           }
                         }}
-                        aria-label="Select all on page"
+                        aria-label="选择本页全部"
                       />`
                     : nothing}
                 </th>
                 ${sortHeader("key", "Key", "data-table-key-col")}
-                <th>Label</th>
-                ${sortHeader("kind", "Kind")} ${sortHeader("updated", "Updated")}
+                <th>标签</th>
+                ${sortHeader("kind", "类型")} ${sortHeader("updated", "更新时间")}
                 ${sortHeader("tokens", "Tokens")}
                 <th>Thinking</th>
                 <th>Fast</th>
@@ -438,7 +433,7 @@ export function renderSessions(props: SessionsProps) {
                         colspan="10"
                         style="text-align: center; padding: 48px 16px; color: var(--muted)"
                       >
-                        No sessions found.
+                        暂无会话。
                       </td>
                     </tr>
                   `
@@ -461,8 +456,8 @@ export function renderSessions(props: SessionsProps) {
           ? html`
               <div class="data-table-pagination">
                 <div class="data-table-pagination__info">
-                  ${page * props.pageSize + 1}-${Math.min((page + 1) * props.pageSize, totalRows)}
-                  of ${totalRows} row${totalRows === 1 ? "" : "s"}
+                  ${page * props.pageSize + 1}-${Math.min((page + 1) * props.pageSize, totalRows)} /
+                  共 ${totalRows} 行
                 </div>
                 <div class="data-table-pagination__controls">
                   <select
@@ -471,16 +466,16 @@ export function renderSessions(props: SessionsProps) {
                     @change=${(e: Event) =>
                       props.onPageSizeChange(Number((e.target as HTMLSelectElement).value))}
                   >
-                    ${PAGE_SIZES.map((s) => html`<option value=${s}>${s} per page</option>`)}
+                    ${PAGE_SIZES.map((s) => html`<option value=${s}>每页 ${s} 条</option>`)}
                   </select>
                   <button ?disabled=${page <= 0} @click=${() => props.onPageChange(page - 1)}>
-                    Previous
+                    上一页
                   </button>
                   <button
                     ?disabled=${page >= totalPages - 1}
                     @click=${() => props.onPageChange(page + 1)}
                   >
-                    Next
+                    下一页
                   </button>
                 </div>
               </div>
@@ -500,7 +495,7 @@ function renderRow(
   disabled: boolean,
   onNavigateToChat?: (sessionKey: string) => void,
 ) {
-  const updated = row.updatedAt ? formatRelativeTimestamp(row.updatedAt) : "n/a";
+  const updated = row.updatedAt ? formatRelativeTimestamp(row.updatedAt) : "暂无";
   const rawThinking = row.thinkingLevel ?? "";
   const isBinaryThinking = isBinaryThinkingProvider(row.modelProvider);
   const thinking = resolveThinkLevelDisplay(rawThinking, isBinaryThinking);
@@ -540,7 +535,7 @@ function renderRow(
           type="checkbox"
           .checked=${selected}
           @change=${() => onToggleSelect(row.key)}
-          aria-label="Select session"
+          aria-label="选择会话"
         />
       </td>
       <td class="data-table-key-col">
@@ -577,7 +572,7 @@ function renderRow(
         <input
           .value=${row.label ?? ""}
           ?disabled=${disabled}
-          placeholder="(optional)"
+          placeholder="（可选）"
           style="width: 100%; max-width: 140px; padding: 6px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm);"
           @change=${(e: Event) => {
             const value = (e.target as HTMLInputElement).value.trim();
@@ -604,7 +599,7 @@ function renderRow(
           ${thinkLevels.map(
             (level) =>
               html`<option value=${level} ?selected=${thinking === level}>
-                ${level || "inherit"}
+                ${level || "继承"}
               </option>`,
           )}
         </select>
@@ -655,7 +650,7 @@ function renderRow(
           ${reasoningLevels.map(
             (level) =>
               html`<option value=${level} ?selected=${reasoning === level}>
-                ${level || "inherit"}
+                ${level || "继承"}
               </option>`,
           )}
         </select>

@@ -9,14 +9,14 @@ function formatRemaining(ms: number): string {
   const remaining = Math.max(0, ms);
   const totalSeconds = Math.floor(remaining / 1000);
   if (totalSeconds < 60) {
-    return `${totalSeconds}s`;
+    return `${totalSeconds} 秒`;
   }
   const minutes = Math.floor(totalSeconds / 60);
   if (minutes < 60) {
-    return `${minutes}m`;
+    return `${minutes} 分钟`;
   }
   const hours = Math.floor(minutes / 60);
-  return `${hours}h`;
+  return `${hours} 小时`;
 }
 
 function renderMetaRow(label: string, value?: string | null) {
@@ -30,10 +30,10 @@ function renderExecBody(request: ExecApprovalRequestPayload) {
   return html`
     <div class="exec-approval-command mono">${request.command}</div>
     <div class="exec-approval-meta">
-      ${renderMetaRow("Host", request.host)} ${renderMetaRow("Agent", request.agentId)}
-      ${renderMetaRow("Session", request.sessionKey)} ${renderMetaRow("CWD", request.cwd)}
-      ${renderMetaRow("Resolved", request.resolvedPath)}
-      ${renderMetaRow("Security", request.security)} ${renderMetaRow("Ask", request.ask)}
+      ${renderMetaRow("主机", request.host)} ${renderMetaRow("Agent", request.agentId)}
+      ${renderMetaRow("会话", request.sessionKey)} ${renderMetaRow("工作目录", request.cwd)}
+      ${renderMetaRow("解析后路径", request.resolvedPath)}
+      ${renderMetaRow("安全级别", request.security)} ${renderMetaRow("审批模式", request.ask)}
     </div>
   `;
 }
@@ -46,9 +46,9 @@ ${active.pluginDescription}</pre
         >`
       : nothing}
     <div class="exec-approval-meta">
-      ${renderMetaRow("Severity", active.pluginSeverity)}
-      ${renderMetaRow("Plugin", active.pluginId)} ${renderMetaRow("Agent", active.request.agentId)}
-      ${renderMetaRow("Session", active.request.sessionKey)}
+      ${renderMetaRow("严重级别", active.pluginSeverity)} ${renderMetaRow("插件", active.pluginId)}
+      ${renderMetaRow("Agent", active.request.agentId)}
+      ${renderMetaRow("会话", active.request.sessionKey)}
     </div>
   `;
 }
@@ -60,12 +60,10 @@ export function renderExecApprovalPrompt(state: AppViewState) {
   }
   const request = active.request;
   const remainingMs = active.expiresAtMs - Date.now();
-  const remaining = remainingMs > 0 ? `expires in ${formatRemaining(remainingMs)}` : "expired";
+  const remaining = remainingMs > 0 ? `将在 ${formatRemaining(remainingMs)} 后过期` : "已过期";
   const queueCount = state.execApprovalQueue.length;
   const isPlugin = active.kind === "plugin";
-  const title = isPlugin
-    ? (active.pluginTitle ?? "Plugin approval needed")
-    : "Exec approval needed";
+  const title = isPlugin ? (active.pluginTitle ?? "需要插件审批") : "需要执行审批";
   return html`
     <div class="exec-approval-overlay" role="dialog" aria-live="polite">
       <div class="exec-approval-card">
@@ -75,7 +73,7 @@ export function renderExecApprovalPrompt(state: AppViewState) {
             <div class="exec-approval-sub">${remaining}</div>
           </div>
           ${queueCount > 1
-            ? html`<div class="exec-approval-queue">${queueCount} pending</div>`
+            ? html`<div class="exec-approval-queue">${queueCount} 条待处理</div>`
             : nothing}
         </div>
         ${isPlugin ? renderPluginBody(active) : renderExecBody(request)}
@@ -88,21 +86,21 @@ export function renderExecApprovalPrompt(state: AppViewState) {
             ?disabled=${state.execApprovalBusy}
             @click=${() => state.handleExecApprovalDecision("allow-once")}
           >
-            Allow once
+            允许一次
           </button>
           <button
             class="btn"
             ?disabled=${state.execApprovalBusy}
             @click=${() => state.handleExecApprovalDecision("allow-always")}
           >
-            Always allow
+            始终允许
           </button>
           <button
             class="btn danger"
             ?disabled=${state.execApprovalBusy}
             @click=${() => state.handleExecApprovalDecision("deny")}
           >
-            Deny
+            拒绝
           </button>
         </div>
       </div>

@@ -58,7 +58,7 @@ export function renderNodes(props: NodesProps) {
           <div class="card-sub">Paired devices and live links.</div>
         </div>
         <button class="btn" ?disabled=${props.loading} @click=${props.onRefresh}>
-          ${props.loading ? "Loading…" : "Refresh"}
+          ${props.loading ? "加载中…" : "刷新"}
         </button>
       </div>
       <div class="list" style="margin-top: 16px;">
@@ -82,7 +82,7 @@ function renderDevices(props: NodesProps) {
           <div class="card-sub">Pairing requests + role tokens.</div>
         </div>
         <button class="btn" ?disabled=${props.devicesLoading} @click=${props.onDevicesRefresh}>
-          ${props.devicesLoading ? "Loading…" : "Refresh"}
+          ${props.devicesLoading ? "加载中…" : "刷新"}
         </button>
       </div>
       ${props.devicesError
@@ -111,10 +111,10 @@ function renderDevices(props: NodesProps) {
 
 function renderPendingDevice(req: PendingDevice, props: NodesProps) {
   const name = req.displayName?.trim() || req.deviceId;
-  const age = typeof req.ts === "number" ? formatRelativeTimestamp(req.ts) : "n/a";
+  const age = typeof req.ts === "number" ? formatRelativeTimestamp(req.ts) : "暂无";
   const roleValue = req.role?.trim() || formatList(req.roles);
   const scopesValue = formatList(req.scopes);
-  const repair = req.isRepair ? " · repair" : "";
+  const repair = req.isRepair ? " · 修复" : "";
   const ip = req.remoteIp ? ` · ${req.remoteIp}` : "";
   return html`
     <div class="list-item">
@@ -122,7 +122,7 @@ function renderPendingDevice(req: PendingDevice, props: NodesProps) {
         <div class="list-title">${name}</div>
         <div class="list-sub">${req.deviceId}${ip}</div>
         <div class="muted" style="margin-top: 6px;">
-          role: ${roleValue} · scopes: ${scopesValue} · requested ${age}${repair}
+          角色：${roleValue} · 权限范围：${scopesValue} · 请求于 ${age}${repair}
         </div>
       </div>
       <div class="list-meta">
@@ -142,8 +142,8 @@ function renderPendingDevice(req: PendingDevice, props: NodesProps) {
 function renderPairedDevice(device: PairedDevice, props: NodesProps) {
   const name = device.displayName?.trim() || device.deviceId;
   const ip = device.remoteIp ? ` · ${device.remoteIp}` : "";
-  const roles = `roles: ${formatList(device.roles)}`;
-  const scopes = `scopes: ${formatList(device.scopes)}`;
+  const roles = `角色：${formatList(device.roles)}`;
+  const scopes = `权限范围：${formatList(device.scopes)}`;
   const tokens = Array.isArray(device.tokens) ? device.tokens : [];
   return html`
     <div class="list-item">
@@ -152,9 +152,9 @@ function renderPairedDevice(device: PairedDevice, props: NodesProps) {
         <div class="list-sub">${device.deviceId}${ip}</div>
         <div class="muted" style="margin-top: 6px;">${roles} · ${scopes}</div>
         ${tokens.length === 0
-          ? html` <div class="muted" style="margin-top: 6px">Tokens: none</div> `
+          ? html` <div class="muted" style="margin-top: 6px">Token：无</div> `
           : html`
-              <div class="muted" style="margin-top: 10px;">Tokens</div>
+              <div class="muted" style="margin-top: 10px;">Token</div>
               <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
                 ${tokens.map((token) => renderTokenRow(device.deviceId, token, props))}
               </div>
@@ -165,8 +165,8 @@ function renderPairedDevice(device: PairedDevice, props: NodesProps) {
 }
 
 function renderTokenRow(deviceId: string, token: DeviceTokenSummary, props: NodesProps) {
-  const status = token.revokedAtMs ? "revoked" : "active";
-  const scopes = `scopes: ${formatList(token.scopes)}`;
+  const status = token.revokedAtMs ? "已吊销" : "有效";
+  const scopes = `权限范围：${formatList(token.scopes)}`;
   const when = formatRelativeTimestamp(
     token.rotatedAtMs ?? token.createdAtMs ?? token.lastUsedAtMs ?? null,
   );
@@ -251,9 +251,9 @@ function renderBindings(state: BindingState) {
     <section class="card">
       <div class="row" style="justify-content: space-between; align-items: center;">
         <div>
-          <div class="card-title">Exec node binding</div>
+          <div class="card-title">Exec 节点绑定</div>
           <div class="card-sub">
-            Pin agents to a specific node when using <span class="mono">exec host=node</span>.
+            当使用 <span class="mono">exec host=node</span> 时，将 agent 固定到指定节点。
           </div>
         </div>
         <button
@@ -261,7 +261,7 @@ function renderBindings(state: BindingState) {
           ?disabled=${state.disabled || !state.configDirty}
           @click=${state.onSave}
         >
-          ${state.configSaving ? "Saving…" : "Save"}
+          ${state.configSaving ? "保存中…" : "保存"}
         </button>
       </div>
 
@@ -276,7 +276,7 @@ function renderBindings(state: BindingState) {
         ? html`<div class="row" style="margin-top: 12px; gap: 12px;">
             <div class="muted">Load config to edit bindings.</div>
             <button class="btn" ?disabled=${state.configLoading} @click=${state.onLoadConfig}>
-              ${state.configLoading ? "Loading…" : "Load config"}
+              ${state.configLoading ? "加载中…" : "加载配置"}
             </button>
           </div>`
         : html`
@@ -297,7 +297,7 @@ function renderBindings(state: BindingState) {
                         state.onBindDefault(value ? value : null);
                       }}
                     >
-                      <option value="" ?selected=${defaultValue === ""}>Any node</option>
+                      <option value="" ?selected=${defaultValue === ""}>任意节点</option>
                       ${state.nodes.map(
                         (node) =>
                           html`<option value=${node.id} ?selected=${defaultValue === node.id}>
@@ -307,13 +307,13 @@ function renderBindings(state: BindingState) {
                     </select>
                   </label>
                   ${!supportsBinding
-                    ? html` <div class="muted">No nodes with system.run available.</div> `
+                    ? html` <div class="muted">没有可用 system.run 的节点。</div> `
                     : nothing}
                 </div>
               </div>
 
               ${state.agents.length === 0
-                ? html` <div class="muted">No agents found.</div> `
+                ? html` <div class="muted">未找到 agent。</div> `
                 : state.agents.map((agent) => renderAgentBinding(agent, state))}
             </div>
           `}
@@ -330,15 +330,15 @@ function renderAgentBinding(agent: BindingAgent, state: BindingState) {
       <div class="list-main">
         <div class="list-title">${label}</div>
         <div class="list-sub">
-          ${agent.isDefault ? "default agent" : "agent"} ·
+          ${agent.isDefault ? "默认 agent" : "agent"} ·
           ${bindingValue === "__default__"
-            ? `uses default (${state.defaultBinding ?? "any"})`
-            : `override: ${agent.binding}`}
+            ? `使用默认值（${state.defaultBinding ?? "任意"}）`
+            : `覆盖：${agent.binding}`}
         </div>
       </div>
       <div class="list-meta">
         <label class="field">
-          <span>Binding</span>
+          <span>绑定节点</span>
           <select
             ?disabled=${state.disabled || !supportsBinding}
             @change=${(event: Event) => {
@@ -348,7 +348,7 @@ function renderAgentBinding(agent: BindingAgent, state: BindingState) {
             }}
           >
             <option value="__default__" ?selected=${bindingValue === "__default__"}>
-              Use default
+              使用默认值
             </option>
             ${state.nodes.map(
               (node) =>
@@ -417,7 +417,7 @@ function renderNode(node: Record<string, unknown>) {
   const paired = Boolean(node.paired);
   const title =
     (typeof node.displayName === "string" && node.displayName.trim()) ||
-    (typeof node.nodeId === "string" ? node.nodeId : "unknown");
+    (typeof node.nodeId === "string" ? node.nodeId : "未知");
   const caps = Array.isArray(node.caps) ? (node.caps as unknown[]) : [];
   const commands = Array.isArray(node.commands) ? (node.commands as unknown[]) : [];
   return html`
@@ -430,9 +430,9 @@ function renderNode(node: Record<string, unknown>) {
           ${typeof node.version === "string" ? ` · ${node.version}` : ""}
         </div>
         <div class="chip-row" style="margin-top: 6px;">
-          <span class="chip">${paired ? "paired" : "unpaired"}</span>
+          <span class="chip">${paired ? "已配对" : "未配对"}</span>
           <span class="chip ${connected ? "chip-ok" : "chip-warn"}">
-            ${connected ? "connected" : "offline"}
+            ${connected ? "在线" : "离线"}
           </span>
           ${caps.slice(0, 12).map((c) => html`<span class="chip">${String(c)}</span>`)}
           ${commands.slice(0, 8).map((c) => html`<span class="chip">${String(c)}</span>`)}
