@@ -31,19 +31,19 @@ export function renderTelegramCard(params: {
         </div>
         <div class="status-list account-card-status">
           <div>
-            <span class="label">Running</span>
-            <span>${account.running ? "Yes" : "No"}</span>
+            <span class="label">运行中</span>
+            <span>${account.running ? "是" : "否"}</span>
           </div>
           <div>
-            <span class="label">Configured</span>
-            <span>${account.configured ? "Yes" : "No"}</span>
+            <span class="label">已配置</span>
+            <span>${account.configured ? "是" : "否"}</span>
           </div>
           <div>
-            <span class="label">Last inbound</span>
+            <span class="label">最近入站</span>
             <span
               >${account.lastInboundAt
                 ? formatRelativeTimestamp(account.lastInboundAt)
-                : "n/a"}</span
+                : "暂无"}</span
             >
           </div>
           ${account.lastError
@@ -58,7 +58,7 @@ export function renderTelegramCard(params: {
     return html`
       <div class="card">
         <div class="card-title">Telegram</div>
-        <div class="card-sub">Bot status and channel configuration.</div>
+        <div class="card-sub">机器人状态与通道配置。</div>
         ${accountCountLabel}
 
         <div class="account-card-list">
@@ -70,14 +70,14 @@ export function renderTelegramCard(params: {
           : nothing}
         ${telegram?.probe
           ? html`<div class="callout" style="margin-top: 12px;">
-              Probe ${telegram.probe.ok ? "ok" : "failed"} · ${telegram.probe.status ?? ""}
+              探测${telegram.probe.ok ? "正常" : "失败"} · ${telegram.probe.status ?? ""}
               ${telegram.probe.error ?? ""}
             </div>`
           : nothing}
         ${renderChannelConfigSection({ channelId: "telegram", props })}
 
         <div class="row" style="margin-top: 12px;">
-          <button class="btn" @click=${() => props.onRefresh(true)}>Probe</button>
+          <button class="btn" @click=${() => props.onRefresh(true)}>探测</button>
         </div>
       </div>
     `;
@@ -85,31 +85,31 @@ export function renderTelegramCard(params: {
 
   return renderSingleAccountChannelCard({
     title: "Telegram",
-    subtitle: "Bot status and channel configuration.",
+    subtitle: "机器人状态与通道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "Configured", value: formatNullableBoolean(configured) },
-      { label: "Running", value: telegram?.running ? "Yes" : "No" },
-      { label: "Mode", value: telegram?.mode ?? "n/a" },
+      { label: "已配置", value: formatNullableBoolean(configured) },
+      { label: "运行中", value: telegram?.running ? "是" : "否" },
+      { label: "模式", value: telegram?.mode ?? "暂无" },
       {
-        label: "Last start",
-        value: telegram?.lastStartAt ? formatRelativeTimestamp(telegram.lastStartAt) : "n/a",
+        label: "最近启动",
+        value: telegram?.lastStartAt ? formatRelativeTimestamp(telegram.lastStartAt) : "暂无",
       },
       {
-        label: "Last probe",
-        value: telegram?.lastProbeAt ? formatRelativeTimestamp(telegram.lastProbeAt) : "n/a",
+        label: "最近探测",
+        value: telegram?.lastProbeAt ? formatRelativeTimestamp(telegram.lastProbeAt) : "暂无",
       },
     ],
     lastError: telegram?.lastError,
     secondaryCallout: telegram?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          Probe ${telegram.probe.ok ? "ok" : "failed"} · ${telegram.probe.status ?? ""}
+          探测${telegram.probe.ok ? "正常" : "失败"} · ${telegram.probe.status ?? ""}
           ${telegram.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "telegram", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>Probe</button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>探测</button>
     </div>`,
   });
 }

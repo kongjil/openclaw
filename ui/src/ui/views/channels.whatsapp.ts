@@ -19,26 +19,26 @@ export function renderWhatsAppCard(params: {
 
   return renderSingleAccountChannelCard({
     title: "WhatsApp",
-    subtitle: "Link WhatsApp Web and monitor connection health.",
+    subtitle: "连接 WhatsApp Web 并监控连接健康状态。",
     accountCountLabel,
     statusRows: [
-      { label: "Configured", value: formatNullableBoolean(configured) },
-      { label: "Linked", value: whatsapp?.linked ? "Yes" : "No" },
-      { label: "Running", value: whatsapp?.running ? "Yes" : "No" },
-      { label: "Connected", value: whatsapp?.connected ? "Yes" : "No" },
+      { label: "已配置", value: formatNullableBoolean(configured) },
+      { label: "已绑定", value: whatsapp?.linked ? "是" : "否" },
+      { label: "运行中", value: whatsapp?.running ? "是" : "否" },
+      { label: "已连接", value: whatsapp?.connected ? "是" : "否" },
       {
-        label: "Last connect",
+        label: "最近连接",
         value: whatsapp?.lastConnectedAt
           ? formatRelativeTimestamp(whatsapp.lastConnectedAt)
-          : "n/a",
+          : "暂无",
       },
       {
-        label: "Last message",
-        value: whatsapp?.lastMessageAt ? formatRelativeTimestamp(whatsapp.lastMessageAt) : "n/a",
+        label: "最近消息",
+        value: whatsapp?.lastMessageAt ? formatRelativeTimestamp(whatsapp.lastMessageAt) : "暂无",
       },
       {
-        label: "Auth age",
-        value: whatsapp?.authAgeMs != null ? formatDurationHuman(whatsapp.authAgeMs) : "n/a",
+        label: "认证时长",
+        value: whatsapp?.authAgeMs != null ? formatDurationHuman(whatsapp.authAgeMs) : "暂无",
       },
     ],
     lastError: whatsapp?.lastError,
@@ -48,7 +48,7 @@ export function renderWhatsAppCard(params: {
         : nothing}
       ${props.whatsappQrDataUrl
         ? html`<div class="qr-wrap">
-            <img src=${props.whatsappQrDataUrl} alt="WhatsApp QR" />
+            <img src=${props.whatsappQrDataUrl} alt="WhatsApp 二维码" />
           </div>`
         : nothing}
     `,
@@ -59,26 +59,26 @@ export function renderWhatsAppCard(params: {
         ?disabled=${props.whatsappBusy}
         @click=${() => props.onWhatsAppStart(false)}
       >
-        ${props.whatsappBusy ? "Working…" : "Show QR"}
+        ${props.whatsappBusy ? "处理中…" : "显示二维码"}
       </button>
       <button
         class="btn"
         ?disabled=${props.whatsappBusy}
         @click=${() => props.onWhatsAppStart(true)}
       >
-        Relink
+        重新绑定
       </button>
       <button class="btn" ?disabled=${props.whatsappBusy} @click=${() => props.onWhatsAppWait()}>
-        Wait for scan
+        等待扫码
       </button>
       <button
         class="btn danger"
         ?disabled=${props.whatsappBusy}
         @click=${() => props.onWhatsAppLogout()}
       >
-        Logout
+        登出
       </button>
-      <button class="btn" @click=${() => props.onRefresh(true)}>Refresh</button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>刷新</button>
     </div>`,
   });
 }

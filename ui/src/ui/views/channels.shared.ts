@@ -87,9 +87,9 @@ export function resolveChannelConfigured(key: ChannelKey, props: ChannelsProps):
 
 export function formatNullableBoolean(value: boolean | null): string {
   if (value == null) {
-    return "n/a";
+    return "暂无";
   }
-  return value ? "Yes" : "No";
+  return value ? "是" : "否";
 }
 
 export function renderSingleAccountChannelCard(params: {
@@ -144,5 +144,5 @@ export function renderChannelAccountCount(
   if (count < 2) {
     return nothing;
   }
-  return html`<div class="account-count">Accounts (${count})</div>`;
+  return html`<div class="account-count">账号（${count}）</div>`;
 }

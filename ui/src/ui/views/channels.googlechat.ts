@@ -19,40 +19,40 @@ export function renderGoogleChatCard(params: {
 
   return renderSingleAccountChannelCard({
     title: "Google Chat",
-    subtitle: "Chat API webhook status and channel configuration.",
+    subtitle: "Chat API Webhook 状态与通道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "Configured", value: formatNullableBoolean(configured) },
+      { label: "已配置", value: formatNullableBoolean(configured) },
       {
-        label: "Running",
-        value: googleChat ? (googleChat.running ? "Yes" : "No") : "n/a",
+        label: "运行中",
+        value: googleChat ? (googleChat.running ? "是" : "否") : "暂无",
       },
-      { label: "Credential", value: googleChat?.credentialSource ?? "n/a" },
+      { label: "凭据", value: googleChat?.credentialSource ?? "暂无" },
       {
-        label: "Audience",
+        label: "受众",
         value: googleChat?.audienceType
           ? `${googleChat.audienceType}${googleChat.audience ? ` · ${googleChat.audience}` : ""}`
-          : "n/a",
+          : "暂无",
       },
       {
-        label: "Last start",
-        value: googleChat?.lastStartAt ? formatRelativeTimestamp(googleChat.lastStartAt) : "n/a",
+        label: "最近启动",
+        value: googleChat?.lastStartAt ? formatRelativeTimestamp(googleChat.lastStartAt) : "暂无",
       },
       {
-        label: "Last probe",
-        value: googleChat?.lastProbeAt ? formatRelativeTimestamp(googleChat.lastProbeAt) : "n/a",
+        label: "最近探测",
+        value: googleChat?.lastProbeAt ? formatRelativeTimestamp(googleChat.lastProbeAt) : "暂无",
       },
     ],
     lastError: googleChat?.lastError,
     secondaryCallout: googleChat?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          Probe ${googleChat.probe.ok ? "ok" : "failed"} · ${googleChat.probe.status ?? ""}
+          探测${googleChat.probe.ok ? "正常" : "失败"} · ${googleChat.probe.status ?? ""}
           ${googleChat.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "googlechat", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>Probe</button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>探测</button>
     </div>`,
   });
 }

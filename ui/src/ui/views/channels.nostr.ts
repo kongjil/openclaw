@@ -10,11 +10,11 @@ import {
 import type { ChannelsProps } from "./channels.types.ts";
 
 /**
- * Truncate a pubkey for display (shows first and last 8 chars)
+ * 截断公钥用于展示（显示前后各 8 个字符）
  */
 function truncatePubkey(pubkey: string | null | undefined): string {
   if (!pubkey) {
-    return "n/a";
+    return "暂无";
   }
   if (pubkey.length <= 20) {
     return pubkey;
@@ -27,11 +27,11 @@ export function renderNostrCard(params: {
   nostr?: NostrStatus | null;
   nostrAccounts: ChannelAccountSnapshot[];
   accountCountLabel: unknown;
-  /** Profile form state (optional - if provided, shows form) */
+  /** 资料表单状态（可选，提供时显示表单） */
   profileFormState?: NostrProfileFormState | null;
-  /** Profile form callbacks */
+  /** 资料表单回调 */
   profileFormCallbacks?: NostrProfileFormCallbacks | null;
-  /** Called when Edit Profile is clicked */
+  /** 点击“编辑资料”时调用 */
   onEditProfile?: () => void;
 }) {
   const {
@@ -66,23 +66,23 @@ export function renderNostrCard(params: {
         </div>
         <div class="status-list account-card-status">
           <div>
-            <span class="label">Running</span>
-            <span>${account.running ? "Yes" : "No"}</span>
+            <span class="label">运行中</span>
+            <span>${account.running ? "是" : "否"}</span>
           </div>
           <div>
-            <span class="label">Configured</span>
-            <span>${account.configured ? "Yes" : "No"}</span>
+            <span class="label">已配置</span>
+            <span>${account.configured ? "是" : "否"}</span>
           </div>
           <div>
-            <span class="label">Public Key</span>
+            <span class="label">公钥</span>
             <span class="monospace" title="${publicKey ?? ""}">${truncatePubkey(publicKey)}</span>
           </div>
           <div>
-            <span class="label">Last inbound</span>
+            <span class="label">最近入站</span>
             <span
               >${account.lastInboundAt
                 ? formatRelativeTimestamp(account.lastInboundAt)
-                : "n/a"}</span
+                : "暂无"}</span
             >
           </div>
           ${account.lastError
@@ -94,7 +94,6 @@ export function renderNostrCard(params: {
   };
 
   const renderProfileSection = () => {
-    // If showing form, render the form instead of the read-only view
     if (showingForm && profileFormCallbacks) {
       return renderNostrProfileForm({
         state: profileFormState,
@@ -127,7 +126,7 @@ export function renderNostrCard(params: {
         <div
           style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;"
         >
-          <div style="font-weight: 500;">Profile</div>
+          <div style="font-weight: 500;">资料</div>
           ${summaryConfigured
             ? html`
                 <button
@@ -135,7 +134,7 @@ export function renderNostrCard(params: {
                   @click=${onEditProfile}
                   style="font-size: 12px; padding: 4px 8px;"
                 >
-                  Edit Profile
+                  编辑资料
                 </button>
               `
             : nothing}
@@ -148,7 +147,7 @@ export function renderNostrCard(params: {
                       <div style="margin-bottom: 8px;">
                         <img
                           src=${picture}
-                          alt="Profile picture"
+                          alt="资料头像"
                           style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);"
                           @error=${(e: Event) => {
                             (e.target as HTMLImageElement).style.display = "none";
@@ -158,16 +157,14 @@ export function renderNostrCard(params: {
                     `
                   : nothing}
                 ${name
-                  ? html`<div><span class="label">Name</span><span>${name}</span></div>`
+                  ? html`<div><span class="label">名称</span><span>${name}</span></div>`
                   : nothing}
                 ${displayName
-                  ? html`<div>
-                      <span class="label">Display Name</span><span>${displayName}</span>
-                    </div>`
+                  ? html`<div><span class="label">显示名称</span><span>${displayName}</span></div>`
                   : nothing}
                 ${about
                   ? html`<div>
-                      <span class="label">About</span
+                      <span class="label">简介</span
                       ><span style="max-width: 300px; overflow: hidden; text-overflow: ellipsis;"
                         >${about}</span
                       >
@@ -180,7 +177,7 @@ export function renderNostrCard(params: {
             `
           : html`
               <div style="color: var(--text-muted); font-size: 13px">
-                No profile set. Click "Edit Profile" to add your name, bio, and avatar.
+                暂未设置资料。点击“编辑资料”可添加名称、简介和头像。
               </div>
             `}
       </div>
@@ -190,7 +187,7 @@ export function renderNostrCard(params: {
   return html`
     <div class="card">
       <div class="card-title">Nostr</div>
-      <div class="card-sub">Decentralized DMs via Nostr relays (NIP-04).</div>
+      <div class="card-sub">通过 Nostr 中继进行去中心化私信（NIP-04）。</div>
       ${accountCountLabel}
       ${hasMultipleAccounts
         ? html`
@@ -201,23 +198,25 @@ export function renderNostrCard(params: {
         : html`
             <div class="status-list" style="margin-top: 16px;">
               <div>
-                <span class="label">Configured</span>
-                <span>${summaryConfigured ? "Yes" : "No"}</span>
+                <span class="label">已配置</span>
+                <span>${summaryConfigured ? "是" : "否"}</span>
               </div>
               <div>
-                <span class="label">Running</span>
-                <span>${summaryRunning ? "Yes" : "No"}</span>
+                <span class="label">运行中</span>
+                <span>${summaryRunning ? "是" : "否"}</span>
               </div>
               <div>
-                <span class="label">Public Key</span>
+                <span class="label">公钥</span>
                 <span class="monospace" title="${summaryPublicKey ?? ""}"
                   >${truncatePubkey(summaryPublicKey)}</span
                 >
               </div>
               <div>
-                <span class="label">Last start</span>
+                <span class="label">最近启动</span>
                 <span
-                  >${summaryLastStartAt ? formatRelativeTimestamp(summaryLastStartAt) : "n/a"}</span
+                  >${summaryLastStartAt
+                    ? formatRelativeTimestamp(summaryLastStartAt)
+                    : "暂无"}</span
                 >
               </div>
             </div>
@@ -228,7 +227,7 @@ export function renderNostrCard(params: {
       ${renderProfileSection()} ${renderChannelConfigSection({ channelId: "nostr", props })}
 
       <div class="row" style="margin-top: 12px;">
-        <button class="btn" @click=${() => props.onRefresh(false)}>Refresh</button>
+        <button class="btn" @click=${() => props.onRefresh(false)}>刷新</button>
       </div>
     </div>
   `;

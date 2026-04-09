@@ -19,30 +19,30 @@ export function renderSlackCard(params: {
 
   return renderSingleAccountChannelCard({
     title: "Slack",
-    subtitle: "Socket mode status and channel configuration.",
+    subtitle: "Socket 模式状态与通道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "Configured", value: formatNullableBoolean(configured) },
-      { label: "Running", value: slack?.running ? "Yes" : "No" },
+      { label: "已配置", value: formatNullableBoolean(configured) },
+      { label: "运行中", value: slack?.running ? "是" : "否" },
       {
-        label: "Last start",
-        value: slack?.lastStartAt ? formatRelativeTimestamp(slack.lastStartAt) : "n/a",
+        label: "最近启动",
+        value: slack?.lastStartAt ? formatRelativeTimestamp(slack.lastStartAt) : "暂无",
       },
       {
-        label: "Last probe",
-        value: slack?.lastProbeAt ? formatRelativeTimestamp(slack.lastProbeAt) : "n/a",
+        label: "最近探测",
+        value: slack?.lastProbeAt ? formatRelativeTimestamp(slack.lastProbeAt) : "暂无",
       },
     ],
     lastError: slack?.lastError,
     secondaryCallout: slack?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          Probe ${slack.probe.ok ? "ok" : "failed"} · ${slack.probe.status ?? ""}
+          探测${slack.probe.ok ? "正常" : "失败"} · ${slack.probe.status ?? ""}
           ${slack.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "slack", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>Probe</button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>探测</button>
     </div>`,
   });
 }

@@ -1,51 +1,43 @@
 /**
- * Nostr Profile Edit Form
+ * Nostr 资料编辑表单
  *
- * Provides UI for editing and publishing Nostr profile (kind:0).
+ * 提供用于编辑并发布 Nostr 资料（kind:0）的界面。
  */
 
 import { html, nothing, type TemplateResult } from "lit";
 import type { NostrProfile as NostrProfileType } from "../types.ts";
 
-// ============================================================================
-// Types
-// ============================================================================
-
 export interface NostrProfileFormState {
-  /** Current form values */
+  /** 当前表单值 */
   values: NostrProfileType;
-  /** Original values for dirty detection */
+  /** 原始值，用于脏状态检测 */
   original: NostrProfileType;
-  /** Whether the form is currently submitting */
+  /** 是否正在提交 */
   saving: boolean;
-  /** Whether import is in progress */
+  /** 是否正在导入 */
   importing: boolean;
-  /** Last error message */
+  /** 最近一次错误消息 */
   error: string | null;
-  /** Last success message */
+  /** 最近一次成功消息 */
   success: string | null;
-  /** Validation errors per field */
+  /** 各字段的校验错误 */
   fieldErrors: Record<string, string>;
-  /** Whether to show advanced fields */
+  /** 是否显示高级字段 */
   showAdvanced: boolean;
 }
 
 export interface NostrProfileFormCallbacks {
-  /** Called when a field value changes */
+  /** 字段值变化时调用 */
   onFieldChange: (field: keyof NostrProfileType, value: string) => void;
-  /** Called when save is clicked */
+  /** 点击保存时调用 */
   onSave: () => void;
-  /** Called when import is clicked */
+  /** 点击导入时调用 */
   onImport: () => void;
-  /** Called when cancel is clicked */
+  /** 点击取消时调用 */
   onCancel: () => void;
-  /** Called when toggle advanced is clicked */
+  /** 点击切换高级字段时调用 */
   onToggleAdvanced: () => void;
 }
-
-// ============================================================================
-// Helpers
-// ============================================================================
 
 function isFormDirty(state: NostrProfileFormState): boolean {
   const { values, original } = state;
@@ -60,10 +52,6 @@ function isFormDirty(state: NostrProfileFormState): boolean {
     values.lud16 !== original.lud16
   );
 }
-
-// ============================================================================
-// Form Rendering
-// ============================================================================
 
 export function renderNostrProfileForm(params: {
   state: NostrProfileFormState;
@@ -164,7 +152,7 @@ export function renderNostrProfileForm(params: {
       <div style="margin-bottom: 12px;">
         <img
           src=${picture}
-          alt="Profile picture preview"
+          alt="头像预览"
           style="max-width: 80px; max-height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid var(--border-color);"
           @error=${(e: Event) => {
             const img = e.target as HTMLImageElement;
@@ -187,8 +175,8 @@ export function renderNostrProfileForm(params: {
       <div
         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;"
       >
-        <div style="font-weight: 600; font-size: 16px;">Edit Profile</div>
-        <div style="font-size: 12px; color: var(--text-muted);">Account: ${accountId}</div>
+        <div style="font-weight: 600; font-size: 16px;">编辑资料</div>
+        <div style="font-size: 12px; color: var(--text-muted);">账号：${accountId}</div>
       </div>
 
       ${state.error
@@ -198,26 +186,26 @@ export function renderNostrProfileForm(params: {
         ? html`<div class="callout success" style="margin-bottom: 12px;">${state.success}</div>`
         : nothing}
       ${renderPicturePreview()}
-      ${renderField("name", "Username", {
+      ${renderField("name", "用户名", {
         placeholder: "satoshi",
         maxLength: 256,
-        help: "Short username (e.g., satoshi)",
+        help: "简短用户名（例如：satoshi）",
       })}
-      ${renderField("displayName", "Display Name", {
+      ${renderField("displayName", "显示名称", {
         placeholder: "Satoshi Nakamoto",
         maxLength: 256,
-        help: "Your full display name",
+        help: "你的完整显示名称",
       })}
-      ${renderField("about", "Bio", {
+      ${renderField("about", "简介", {
         type: "textarea",
-        placeholder: "Tell people about yourself...",
+        placeholder: "介绍一下你自己……",
         maxLength: 2000,
-        help: "A brief bio or description",
+        help: "简短的个人简介或说明",
       })}
-      ${renderField("picture", "Avatar URL", {
+      ${renderField("picture", "头像 URL", {
         type: "url",
         placeholder: "https://example.com/avatar.jpg",
-        help: "HTTPS URL to your profile picture",
+        help: "你的头像 HTTPS 地址",
       })}
       ${state.showAdvanced
         ? html`
@@ -225,26 +213,26 @@ export function renderNostrProfileForm(params: {
               style="border-top: 1px solid var(--border-color); padding-top: 12px; margin-top: 12px;"
             >
               <div style="font-weight: 500; margin-bottom: 12px; color: var(--text-muted);">
-                Advanced
+                高级选项
               </div>
 
-              ${renderField("banner", "Banner URL", {
+              ${renderField("banner", "横幅 URL", {
                 type: "url",
                 placeholder: "https://example.com/banner.jpg",
-                help: "HTTPS URL to a banner image",
+                help: "横幅图片的 HTTPS 地址",
               })}
-              ${renderField("website", "Website", {
+              ${renderField("website", "网站", {
                 type: "url",
                 placeholder: "https://example.com",
-                help: "Your personal website",
+                help: "你的个人网站",
               })}
-              ${renderField("nip05", "NIP-05 Identifier", {
+              ${renderField("nip05", "NIP-05 标识", {
                 placeholder: "you@example.com",
-                help: "Verifiable identifier (e.g., you@domain.com)",
+                help: "可验证身份标识（例如：you@domain.com）",
               })}
-              ${renderField("lud16", "Lightning Address", {
+              ${renderField("lud16", "闪电地址", {
                 placeholder: "you@getalby.com",
-                help: "Lightning address for tips (LUD-16)",
+                help: "用于接收打赏的 Lightning 地址（LUD-16）",
               })}
             </div>
           `
@@ -256,7 +244,7 @@ export function renderNostrProfileForm(params: {
           @click=${callbacks.onSave}
           ?disabled=${state.saving || !isDirty}
         >
-          ${state.saving ? "Saving..." : "Save & Publish"}
+          ${state.saving ? "保存中..." : "保存并发布"}
         </button>
 
         <button
@@ -264,20 +252,20 @@ export function renderNostrProfileForm(params: {
           @click=${callbacks.onImport}
           ?disabled=${state.importing || state.saving}
         >
-          ${state.importing ? "Importing..." : "Import from Relays"}
+          ${state.importing ? "导入中..." : "从中继导入"}
         </button>
 
         <button class="btn" @click=${callbacks.onToggleAdvanced}>
-          ${state.showAdvanced ? "Hide Advanced" : "Show Advanced"}
+          ${state.showAdvanced ? "隐藏高级选项" : "显示高级选项"}
         </button>
 
-        <button class="btn" @click=${callbacks.onCancel} ?disabled=${state.saving}>Cancel</button>
+        <button class="btn" @click=${callbacks.onCancel} ?disabled=${state.saving}>取消</button>
       </div>
 
       ${isDirty
         ? html`
             <div style="font-size: 12px; color: var(--warning-color); margin-top: 8px">
-              You have unsaved changes
+              你有尚未保存的更改
             </div>
           `
         : nothing}
@@ -285,12 +273,8 @@ export function renderNostrProfileForm(params: {
   `;
 }
 
-// ============================================================================
-// Factory
-// ============================================================================
-
 /**
- * Create initial form state from existing profile
+ * 从现有资料创建初始表单状态
  */
 export function createNostrProfileFormState(
   profile: NostrProfileType | undefined,

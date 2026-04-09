@@ -34,9 +34,9 @@ export async function promptGatewayConfig(
 }> {
   const portRaw = guardCancel(
     await text({
-      message: "Gateway port",
+      message: "Gateway 端口",
       initialValue: String(resolveGatewayPort(cfg)),
-      validate: (value) => (Number.isFinite(Number(value)) ? undefined : "Invalid port"),
+      validate: (value) => (Number.isFinite(Number(value)) ? undefined : "端口无效"),
     }),
     runtime,
   );
@@ -44,32 +44,32 @@ export async function promptGatewayConfig(
 
   let bind = guardCancel(
     await select({
-      message: "Gateway bind mode",
+      message: "Gateway 绑定模式",
       options: [
         {
           value: "loopback",
-          label: "Loopback (Local only)",
-          hint: "Bind to 127.0.0.1 - secure, local-only access",
+          label: "Loopback（仅本机）",
+          hint: "绑定到 127.0.0.1，安全，仅允许本机访问",
         },
         {
           value: "tailnet",
-          label: "Tailnet (Tailscale IP)",
-          hint: "Bind to your Tailscale IP only (100.x.x.x)",
+          label: "Tailnet（Tailscale IP）",
+          hint: "仅绑定到你的 Tailscale IP（100.x.x.x）",
         },
         {
           value: "auto",
-          label: "Auto (Loopback → LAN)",
-          hint: "Prefer loopback; fall back to all interfaces if unavailable",
+          label: "自动（Loopback → LAN）",
+          hint: "优先 loopback；若不可用则回退到所有网卡",
         },
         {
           value: "lan",
-          label: "LAN (All interfaces)",
-          hint: "Bind to 0.0.0.0 - accessible from anywhere on your network",
+          label: "LAN（所有网卡）",
+          hint: "绑定到 0.0.0.0，你的局域网内都可访问",
         },
         {
           value: "custom",
-          label: "Custom IP",
-          hint: "Specify a specific IP address, with 0.0.0.0 fallback if unavailable",
+          label: "自定义 IP",
+          hint: "指定一个固定 IP；若不可用则回退到 0.0.0.0",
         },
       ],
     }),
@@ -80,7 +80,7 @@ export async function promptGatewayConfig(
   if (bind === "custom") {
     const input = guardCancel(
       await text({
-        message: "Custom IP address",
+        message: "自定义 IP 地址",
         placeholder: "192.168.1.100",
         validate: validateIPv4AddressInput,
       }),
@@ -91,14 +91,14 @@ export async function promptGatewayConfig(
 
   let authMode = guardCancel(
     await select({
-      message: "Gateway auth",
+      message: "Gateway 认证方式",
       options: [
-        { value: "token", label: "Token", hint: "Recommended default" },
-        { value: "password", label: "Password" },
+        { value: "token", label: "Token", hint: "推荐默认选项" },
+        { value: "password", label: "密码" },
         {
           value: "trusted-proxy",
           label: "Trusted Proxy",
-          hint: "Behind reverse proxy (Pomerium, Caddy, Traefik, etc.)",
+          hint: "位于反向代理后方（Pomerium、Caddy、Traefik 等）",
         },
       ],
       initialValue: "token",
@@ -108,19 +108,17 @@ export async function promptGatewayConfig(
 
   let tailscaleMode = guardCancel(
     await select({
-      message: "Tailscale exposure",
+      message: "Tailscale 暴露方式",
       options: [...TAILSCALE_EXPOSURE_OPTIONS],
     }),
     runtime,
   );
 
-  // Detect Tailscale binary before proceeding with serve/funnel setup.
-  // Persist the path so getTailnetHostname can reuse it for origin injection.
   let tailscaleBin: string | null = null;
   if (tailscaleMode !== "off") {
     tailscaleBin = await findTailscaleBinary();
     if (!tailscaleBin) {
-      note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Tailscale Warning");
+      note(TAILSCALE_MISSING_BIN_NOTE_LINES.join("\n"), "Tailscale 警告");
     }
   }
 
@@ -130,7 +128,7 @@ export async function promptGatewayConfig(
     tailscaleResetOnExit = Boolean(
       guardCancel(
         await confirm({
-          message: "Reset Tailscale serve/funnel on exit?",
+          message: "退出时重置 Tailscale serve/funnel 吗？",
           initialValue: false,
         }),
         runtime,
@@ -139,22 +137,17 @@ export async function promptGatewayConfig(
   }
 
   if (tailscaleMode !== "off" && bind !== "loopback") {
-    note("Tailscale requires bind=loopback. Adjusting bind to loopback.", "Note");
+    note("Tailscale 需要 bind=loopback，已自动调整为 loopback。", "提示");
     bind = "loopback";
   }
 
   if (tailscaleMode === "funnel" && authMode !== "password") {
-    note("Tailscale funnel requires password auth.", "Note");
+    note("Tailscale funnel 需要使用密码认证。", "提示");
     authMode = "password";
   }
 
-  // trusted-proxy + loopback is valid when the reverse proxy runs on the same
-  // host (e.g. cloudflared, nginx, Caddy). trustedProxies must include 127.0.0.1.
   if (authMode === "trusted-proxy" && tailscaleMode !== "off") {
-    note(
-      "Trusted proxy auth is incompatible with Tailscale serve/funnel. Disabling Tailscale.",
-      "Note",
-    );
+    note("Trusted proxy 认证与 Tailscale serve/funnel 不兼容，已关闭 Tailscale。", "提示");
     tailscaleMode = "off";
     tailscaleResetOnExit = false;
   }
@@ -171,17 +164,17 @@ export async function promptGatewayConfig(
   if (authMode === "token") {
     const tokenInputMode = guardCancel(
       await select<GatewayTokenInputMode>({
-        message: "Gateway token source",
+        message: "Gateway token 来源",
         options: [
           {
             value: "plaintext",
-            label: "Generate/store plaintext token",
-            hint: "Default",
+            label: "生成/存储明文 token",
+            hint: "默认",
           },
           {
             value: "ref",
-            label: "Use SecretRef",
-            hint: "Store an env-backed reference instead of plaintext",
+            label: "使用 SecretRef",
+            hint: "存储环境变量引用，而不是明文",
           },
         ],
         initialValue: "plaintext",
@@ -191,17 +184,17 @@ export async function promptGatewayConfig(
     if (tokenInputMode === "ref") {
       const envVar = guardCancel(
         await text({
-          message: "Gateway token env var",
+          message: "Gateway token 环境变量",
           initialValue: "OPENCLAW_GATEWAY_TOKEN",
           placeholder: "OPENCLAW_GATEWAY_TOKEN",
           validate: (value) => {
             const candidate = String(value ?? "").trim();
             if (!isValidEnvSecretRefId(candidate)) {
-              return "Use an env var name like OPENCLAW_GATEWAY_TOKEN.";
+              return "请使用类似 OPENCLAW_GATEWAY_TOKEN 的环境变量名。";
             }
             const resolved = process.env[candidate]?.trim();
             if (!resolved) {
-              return `Environment variable "${candidate}" is missing or empty in this session.`;
+              return `当前会话中缺少环境变量“${candidate}”或其值为空。`;
             }
             return undefined;
           },
@@ -216,11 +209,11 @@ export async function promptGatewayConfig(
         }),
         id: envVarName,
       };
-      note(`Validated ${envVarName}. OpenClaw will store a token SecretRef.`, "Gateway token");
+      note(`已验证 ${envVarName}。OpenClaw 将存储一个 token SecretRef。`, "Gateway token");
     } else {
       const tokenInput = guardCancel(
         await text({
-          message: "Gateway token (blank to generate)",
+          message: "Gateway token（留空则自动生成）",
           initialValue: randomToken(),
         }),
         runtime,
@@ -233,7 +226,7 @@ export async function promptGatewayConfig(
   if (authMode === "password") {
     const password = guardCancel(
       await text({
-        message: "Gateway password",
+        message: "Gateway 密码",
         validate: validateGatewayPasswordInput,
       }),
       runtime,
@@ -244,29 +237,29 @@ export async function promptGatewayConfig(
   if (authMode === "trusted-proxy") {
     note(
       [
-        "Trusted proxy mode: OpenClaw trusts user identity from a reverse proxy.",
-        "The proxy must authenticate users and pass identity via headers.",
-        "Only requests from specified proxy IPs will be trusted.",
+        "Trusted proxy 模式：OpenClaw 会信任反向代理传来的用户身份。",
+        "代理必须先完成用户认证，并通过请求头传递身份。",
+        "只有来自指定代理 IP 的请求会被信任。",
         "",
-        "Common use cases: Pomerium, Caddy + OAuth, Traefik + forward auth",
-        "Docs: https://docs.openclaw.ai/gateway/trusted-proxy-auth",
+        "常见场景：Pomerium、Caddy + OAuth、Traefik + forward auth",
+        "文档：https://docs.openclaw.ai/gateway/trusted-proxy-auth",
       ].join("\n"),
       "Trusted Proxy Auth",
     );
 
     const userHeader = guardCancel(
       await text({
-        message: "Header containing user identity",
+        message: "承载用户身份的请求头",
         placeholder: "x-forwarded-user",
         initialValue: "x-forwarded-user",
-        validate: (value) => (value?.trim() ? undefined : "User header is required"),
+        validate: (value) => (value?.trim() ? undefined : "必须填写用户身份请求头"),
       }),
       runtime,
     );
 
     const requiredHeadersRaw = guardCancel(
       await text({
-        message: "Required headers (comma-separated, optional)",
+        message: "必须存在的请求头（逗号分隔，可留空）",
         placeholder: "x-forwarded-proto,x-forwarded-host",
       }),
       runtime,
@@ -280,7 +273,7 @@ export async function promptGatewayConfig(
 
     const allowUsersRaw = guardCancel(
       await text({
-        message: "Allowed users (comma-separated, blank = all authenticated users)",
+        message: "允许的用户（逗号分隔，留空=所有已认证用户）",
         placeholder: "nick@example.com,admin@company.com",
       }),
       runtime,
@@ -294,11 +287,11 @@ export async function promptGatewayConfig(
 
     const trustedProxiesRaw = guardCancel(
       await text({
-        message: "Trusted proxy IPs (comma-separated)",
+        message: "受信任代理 IP（逗号分隔）",
         placeholder: "10.0.1.10,192.168.1.5",
         validate: (value) => {
           if (!value || String(value).trim() === "") {
-            return "At least one trusted proxy IP is required";
+            return "至少需要填写一个受信任代理 IP";
           }
           return undefined;
         },

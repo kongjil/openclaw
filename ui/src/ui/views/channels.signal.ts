@@ -19,31 +19,31 @@ export function renderSignalCard(params: {
 
   return renderSingleAccountChannelCard({
     title: "Signal",
-    subtitle: "signal-cli status and channel configuration.",
+    subtitle: "signal-cli 状态与通道配置。",
     accountCountLabel,
     statusRows: [
-      { label: "Configured", value: formatNullableBoolean(configured) },
-      { label: "Running", value: signal?.running ? "Yes" : "No" },
-      { label: "Base URL", value: signal?.baseUrl ?? "n/a" },
+      { label: "已配置", value: formatNullableBoolean(configured) },
+      { label: "运行中", value: signal?.running ? "是" : "否" },
+      { label: "Base URL", value: signal?.baseUrl ?? "暂无" },
       {
-        label: "Last start",
-        value: signal?.lastStartAt ? formatRelativeTimestamp(signal.lastStartAt) : "n/a",
+        label: "最近启动",
+        value: signal?.lastStartAt ? formatRelativeTimestamp(signal.lastStartAt) : "暂无",
       },
       {
-        label: "Last probe",
-        value: signal?.lastProbeAt ? formatRelativeTimestamp(signal.lastProbeAt) : "n/a",
+        label: "最近探测",
+        value: signal?.lastProbeAt ? formatRelativeTimestamp(signal.lastProbeAt) : "暂无",
       },
     ],
     lastError: signal?.lastError,
     secondaryCallout: signal?.probe
       ? html`<div class="callout" style="margin-top: 12px;">
-          Probe ${signal.probe.ok ? "ok" : "failed"} · ${signal.probe.status ?? ""}
+          探测${signal.probe.ok ? "正常" : "失败"} · ${signal.probe.status ?? ""}
           ${signal.probe.error ?? ""}
         </div>`
       : nothing,
     configSection: renderChannelConfigSection({ channelId: "signal", props }),
     footer: html`<div class="row" style="margin-top: 12px;">
-      <button class="btn" @click=${() => props.onRefresh(true)}>Probe</button>
+      <button class="btn" @click=${() => props.onRefresh(true)}>探测</button>
     </div>`,
   });
 }
