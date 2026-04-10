@@ -90,12 +90,12 @@ export function renderOverviewCards(props: OverviewCardsProps) {
     cronEnabled == null
       ? t("common.na")
       : cronEnabled
-        ? `${cronJobCount} jobs`
+        ? `${cronJobCount} 个任务`
         : t("common.disabled");
 
   const cronHint =
     failedCronCount > 0
-      ? html`<span class="danger">${failedCronCount} failed</span>`
+      ? html`<span class="danger">${failedCronCount} 个失败</span>`
       : cronNext
         ? t("overview.stats.cronNext", { time: formatNextRun(cronNext) })
         : "";
@@ -120,7 +120,7 @@ export function renderOverviewCards(props: OverviewCardsProps) {
       tab: "skills",
       label: t("overview.cards.skills"),
       value: `${enabledSkills}/${totalSkills}`,
-      hint: blockedSkills > 0 ? `${blockedSkills} blocked` : `${enabledSkills} active`,
+      hint: blockedSkills > 0 ? `${blockedSkills} 个受限` : `${enabledSkills} 个启用`,
     },
     {
       kind: "cron",

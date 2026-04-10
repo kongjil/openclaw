@@ -29,12 +29,12 @@ function renderToolBadges(section: AgentToolSection, tool: AgentToolEntry) {
   const pluginId = tool.pluginId ?? section.pluginId;
   const badges: string[] = [];
   if (source === "plugin" && pluginId) {
-    badges.push(`plugin:${pluginId}`);
+    badges.push(`插件：${pluginId}`);
   } else if (source === "core") {
-    badges.push("core");
+    badges.push("内置");
   }
   if (tool.optional) {
-    badges.push("optional");
+    badges.push("可选");
   }
   if (badges.length === 0) {
     return nothing;
@@ -203,23 +203,21 @@ export function renderAgentTools(params: {
       ${!params.configForm
         ? html`
             <div class="callout info" style="margin-top: 12px">
-              Load the gateway config to adjust tool profiles.
+              请先加载网关配置，再调整工具配置档。
             </div>
           `
         : nothing}
       ${hasAgentAllow
         ? html`
             <div class="callout info" style="margin-top: 12px">
-              This agent is using an explicit allowlist in config. Tool overrides are managed in the
-              Config tab.
+              该 agent 正在使用配置中的显式 allowlist。工具覆盖项请在 Config 页签中管理。
             </div>
           `
         : nothing}
       ${hasGlobalAllow
         ? html`
             <div class="callout info" style="margin-top: 12px">
-              Global tools.allow is set. Agent overrides cannot enable tools that are globally
-              blocked.
+              已设置全局 tools.allow。对于被全局屏蔽的工具，agent 覆盖项无法重新启用。
             </div>
           `
         : nothing}
@@ -229,14 +227,14 @@ export function renderAgentTools(params: {
       ${params.toolsCatalogError
         ? html`
             <div class="callout info" style="margin-top: 12px">
-              Could not load runtime tool catalog. Showing built-in fallback list instead.
+              无法加载运行时工具目录，现改为显示内置回退列表。
             </div>
           `
         : nothing}
 
       <div class="agent-tools-meta" style="margin-top: 16px;">
         <div class="agent-kv">
-          <div class="label">Profile</div>
+          <div class="label">配置档</div>
           <div class="mono">${profile}</div>
         </div>
         <div class="agent-kv">
@@ -262,7 +260,7 @@ export function renderAgentTools(params: {
         ${!params.runtimeSessionMatchesSelectedAgent
           ? html`
               <div class="callout info" style="margin-top: 12px">
-                Switch chat to this agent to view its live runtime tools.
+                请先把聊天切到这个 agent，才能查看它的实时运行时工具。
               </div>
             `
           : params.toolsEffectiveLoading &&
@@ -272,13 +270,13 @@ export function renderAgentTools(params: {
             : params.toolsEffectiveError
               ? html`
                   <div class="callout info" style="margin-top: 12px">
-                    Could not load available tools for this session.
+                    无法加载这个会话的可用工具。
                   </div>
                 `
               : (params.toolsEffectiveResult?.groups?.length ?? 0) === 0
                 ? html`
                     <div class="callout info" style="margin-top: 12px">
-                      No tools are available for this session right now.
+                      当前这个会话暂时没有可用工具。
                     </div>
                   `
                 : html`
@@ -345,7 +343,7 @@ export function renderAgentTools(params: {
                 ${section.label}
                 ${section.source === "plugin" && section.pluginId
                   ? html`<span class="agent-pill" style="margin-left: 8px;"
-                      >plugin:${section.pluginId}</span
+                      >插件：${section.pluginId}</span
                     >`
                   : nothing}
               </div>

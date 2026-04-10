@@ -418,11 +418,11 @@ export function renderSessions(props: SessionsProps) {
                 ${sortHeader("key", "Key", "data-table-key-col")}
                 <th>标签</th>
                 ${sortHeader("kind", "类型")} ${sortHeader("updated", "更新时间")}
-                ${sortHeader("tokens", "Tokens")}
-                <th>Thinking</th>
-                <th>Fast</th>
-                <th>Verbose</th>
-                <th>Reasoning</th>
+                ${sortHeader("tokens", "令牌")}
+                <th>思考</th>
+                <th>快速</th>
+                <th>详细</th>
+                <th>推理</th>
               </tr>
             </thead>
             <tbody>

@@ -108,17 +108,17 @@ export function renderDebug(props: DebugProps) {
 
     <section class="card" style="margin-top: 18px;">
       <div class="card-title">模型</div>
-      <div class="card-sub">Catalog from models.list.</div>
+      <div class="card-sub">来自 models.list 的目录。</div>
       <pre class="code-block" style="margin-top: 12px;">
 ${JSON.stringify(props.models ?? [], null, 2)}</pre
       >
     </section>
 
     <section class="card" style="margin-top: 18px;">
-      <div class="card-title">Event Log</div>
-      <div class="card-sub">Latest gateway events.</div>
+      <div class="card-title">事件日志</div>
+      <div class="card-sub">最新网关事件。</div>
       ${props.eventLog.length === 0
-        ? html` <div class="muted" style="margin-top: 12px">No events yet.</div> `
+        ? html` <div class="muted" style="margin-top: 12px">暂时还没有事件。</div> `
         : html`
             <div class="list debug-event-log" style="margin-top: 12px;">
               ${props.eventLog.map(

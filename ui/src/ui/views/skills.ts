@@ -119,7 +119,7 @@ export function renderSkills(props: SkillsProps) {
           ?disabled=${props.loading || !props.connected}
           @click=${props.onRefresh}
         >
-          ${props.loading ? "Loading\u2026" : "Refresh"}
+          ${props.loading ? "加载中…" : "刷新"}
         </button>
       </div>
 
@@ -270,7 +270,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
               (e.currentTarget as HTMLElement).closest("dialog")?.close();
             }}
           >
-            Close
+            关闭
           </button>
         </div>
         <div class="md-preview-dialog__body" style="display: grid; gap: 16px;">
@@ -287,15 +287,13 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                   class="callout"
                   style="border-color: var(--warn-subtle); background: var(--warn-subtle); color: var(--warn);"
                 >
-                  <div style="font-weight: 600; margin-bottom: 4px;">Missing requirements</div>
+                  <div style="font-weight: 600; margin-bottom: 4px;">缺少条件</div>
                   <div>${missing.join(", ")}</div>
                 </div>
               `
             : nothing}
           ${reasons.length > 0
-            ? html`
-                <div class="muted" style="font-size: 13px;">Reason: ${reasons.join(", ")}</div>
-              `
+            ? html` <div class="muted" style="font-size: 13px;">原因：${reasons.join(", ")}</div> `
             : nothing}
 
           <div style="display: flex; align-items: center; gap: 12px;">
@@ -309,7 +307,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
               />
             </label>
             <span style="font-size: 13px; font-weight: 500;">
-              ${skill.disabled ? "Disabled" : "Enabled"}
+              ${skill.disabled ? "已禁用" : "已启用"}
             </span>
             ${canInstall
               ? html`<button
@@ -317,7 +315,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                   ?disabled=${busy}
                   @click=${() => props.onInstall(skill.skillKey, skill.name, skill.install[0].id)}
                 >
-                  ${busy ? "Installing\u2026" : skill.install[0].label}
+                  ${busy ? "安装中…" : skill.install[0].label}
                 </button>`
               : nothing}
           </div>
@@ -332,7 +330,7 @@ function renderSkillDetail(skill: SkillStatusEntry, props: SkillsProps) {
                 <div style="display: grid; gap: 8px;">
                   <div class="field">
                     <span
-                      >API Key
+                      >API 密钥
                       <span class="muted" style="font-weight: normal; font-size: 0.88em;"
                         >(${skill.primaryEnv})</span
                       ></span

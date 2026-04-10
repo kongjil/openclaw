@@ -30,7 +30,7 @@ function renderExecBody(request: ExecApprovalRequestPayload) {
   return html`
     <div class="exec-approval-command mono">${request.command}</div>
     <div class="exec-approval-meta">
-      ${renderMetaRow("主机", request.host)} ${renderMetaRow("Agent", request.agentId)}
+      ${renderMetaRow("主机", request.host)} ${renderMetaRow("代理", request.agentId)}
       ${renderMetaRow("会话", request.sessionKey)} ${renderMetaRow("工作目录", request.cwd)}
       ${renderMetaRow("解析后路径", request.resolvedPath)}
       ${renderMetaRow("安全级别", request.security)} ${renderMetaRow("审批模式", request.ask)}
@@ -47,7 +47,7 @@ ${active.pluginDescription}</pre
       : nothing}
     <div class="exec-approval-meta">
       ${renderMetaRow("严重级别", active.pluginSeverity)} ${renderMetaRow("插件", active.pluginId)}
-      ${renderMetaRow("Agent", active.request.agentId)}
+      ${renderMetaRow("代理", active.request.agentId)}
       ${renderMetaRow("会话", active.request.sessionKey)}
     </div>
   `;

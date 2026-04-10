@@ -24,7 +24,7 @@ export function renderSignalCard(params: {
     statusRows: [
       { label: "已配置", value: formatNullableBoolean(configured) },
       { label: "运行中", value: signal?.running ? "是" : "否" },
-      { label: "Base URL", value: signal?.baseUrl ?? "暂无" },
+      { label: "基础 URL", value: signal?.baseUrl ?? "暂无" },
       {
         label: "最近启动",
         value: signal?.lastStartAt ? formatRelativeTimestamp(signal.lastStartAt) : "暂无",

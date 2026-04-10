@@ -155,7 +155,7 @@ export function renderAgents(props: AgentsProps) {
               @change=${(e: Event) => props.onSelectAgent((e.target as HTMLSelectElement).value)}
             >
               ${agents.length === 0
-                ? html` <option value="">No agents</option> `
+                ? html` <option value="">没有 agent</option> `
                 : agents.map(
                     (agent) => html`
                       <option value=${agent.id} ?selected=${agent.id === selectedId}>
@@ -174,9 +174,9 @@ export function renderAgents(props: AgentsProps) {
                     type="button"
                     class="btn btn--sm btn--ghost"
                     @click=${() => void navigator.clipboard.writeText(selectedAgent.id)}
-                    title="Copy agent ID to clipboard"
+                    title="复制 agent ID 到剪贴板"
                   >
-                    Copy ID
+                    复制 ID
                   </button>
                   <button
                     type="button"
@@ -184,10 +184,10 @@ export function renderAgents(props: AgentsProps) {
                     ?disabled=${Boolean(defaultId && selectedAgent.id === defaultId)}
                     @click=${() => props.onSetDefault(selectedAgent.id)}
                     title=${defaultId && selectedAgent.id === defaultId
-                      ? "Already the default agent"
-                      : "Set as the default agent"}
+                      ? "已经是默认 agent"
+                      : "设为默认 agent"}
                   >
-                    ${defaultId && selectedAgent.id === defaultId ? "Default" : "Set Default"}
+                    ${defaultId && selectedAgent.id === defaultId ? "默认" : "设为默认"}
                   </button>
                 `
               : nothing}
@@ -196,7 +196,7 @@ export function renderAgents(props: AgentsProps) {
               ?disabled=${props.loading}
               @click=${props.onRefresh}
             >
-              ${props.loading ? "Loading…" : "Refresh"}
+              ${props.loading ? "加载中…" : "刷新"}
             </button>
           </div>
         </div>
@@ -208,8 +208,8 @@ export function renderAgents(props: AgentsProps) {
         ${!selectedAgent
           ? html`
               <div class="card">
-                <div class="card-title">Select an agent</div>
-                <div class="card-sub">Pick an agent to inspect its workspace and tools.</div>
+                <div class="card-title">选择一个 agent</div>
+                <div class="card-sub">选择一个 agent，查看它的工作区与工具配置。</div>
               </div>
             `
           : html`
@@ -347,12 +347,12 @@ function renderAgentTabs(
   counts: Record<string, number | null>,
 ) {
   const tabs: Array<{ id: AgentsPanel; label: string }> = [
-    { id: "overview", label: "Overview" },
-    { id: "files", label: "Files" },
-    { id: "tools", label: "Tools" },
-    { id: "skills", label: "Skills" },
-    { id: "channels", label: "Channels" },
-    { id: "cron", label: "Cron Jobs" },
+    { id: "overview", label: "概览" },
+    { id: "files", label: "文件" },
+    { id: "tools", label: "工具" },
+    { id: "skills", label: "技能" },
+    { id: "channels", label: "通道" },
+    { id: "cron", label: "Cron 任务" },
   ];
   return html`
     <div class="agent-tabs">

@@ -88,46 +88,42 @@ export function renderAgentOverview(params: {
 
   return html`
     <section class="card">
-      <div class="card-title">Overview</div>
-      <div class="card-sub">Workspace paths and identity metadata.</div>
+      <div class="card-title">概览</div>
+      <div class="card-sub">工作区路径与身份元数据。</div>
 
       <div class="agents-overview-grid" style="margin-top: 16px;">
         <div class="agent-kv">
-          <div class="label">Workspace</div>
+          <div class="label">工作区</div>
           <div>
             <button
               type="button"
               class="workspace-link mono"
               @click=${() => onSelectPanel("files")}
-              title="Open Files tab"
+              title="打开文件页签"
             >
               ${workspace}
             </button>
           </div>
         </div>
         <div class="agent-kv">
-          <div class="label">Primary Model</div>
+          <div class="label">主模型</div>
           <div class="mono">${model}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">Skills Filter</div>
-          <div>${skillFilter ? `${skillCount} selected` : "all skills"}</div>
+          <div class="label">技能过滤器</div>
+          <div>${skillFilter ? `${skillCount} 个已选` : "全部技能"}</div>
         </div>
       </div>
 
       ${configDirty
-        ? html`
-            <div class="callout warn" style="margin-top: 16px">
-              You have unsaved config changes.
-            </div>
-          `
+        ? html` <div class="callout warn" style="margin-top: 16px">你有尚未保存的配置变更。</div> `
         : nothing}
 
       <div class="agent-model-select" style="margin-top: 20px;">
-        <div class="label">Model Selection</div>
+        <div class="label">模型选择</div>
         <div class="agent-model-fields">
           <label class="field">
-            <span>Primary model${isDefault ? " (default)" : ""}</span>
+            <span>主模型${isDefault ? "（默认）" : ""}</span>
             <select
               .value=${isDefault ? (effectivePrimary ?? "") : (entryPrimary ?? "")}
               ?disabled=${disabled}
@@ -135,17 +131,17 @@ export function renderAgentOverview(params: {
                 onModelChange(agent.id, (e.target as HTMLSelectElement).value || null)}
             >
               ${isDefault
-                ? html` <option value="">Not set</option> `
+                ? html` <option value="">未设置</option> `
                 : html`
                     <option value="">
-                      ${defaultPrimary ? `Inherit default (${defaultPrimary})` : "Inherit default"}
+                      ${defaultPrimary ? `继承默认值（${defaultPrimary}）` : "继承默认值"}
                     </option>
                   `}
               ${buildModelOptions(configForm, effectivePrimary ?? undefined, params.modelCatalog)}
             </select>
           </label>
           <div class="field">
-            <span>Fallbacks</span>
+            <span>回退模型</span>
             <div
               class="agent-chip-input"
               @click=${(e: Event) => {
@@ -194,7 +190,7 @@ export function renderAgentOverview(params: {
             ?disabled=${configLoading}
             @click=${onConfigReload}
           >
-            Reload Config
+            重新加载配置
           </button>
           <button
             type="button"
@@ -202,7 +198,7 @@ export function renderAgentOverview(params: {
             ?disabled=${configSaving || !configDirty}
             @click=${onConfigSave}
           >
-            ${configSaving ? "Saving…" : "Save"}
+            ${configSaving ? "保存中…" : "保存"}
           </button>
         </div>
       </div>

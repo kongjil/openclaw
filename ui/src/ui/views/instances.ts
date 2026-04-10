@@ -62,7 +62,11 @@ function renderEntry(entry: PresenceEntry, masked: boolean) {
   const mode = entry.mode ?? "未知";
   const host = entry.host ?? "未知主机";
   const ip = entry.ip ?? null;
-  const roles = Array.isArray(entry.roles) ? entry.roles.filter(Boolean) : [];
+  const roles = Array.isArray(entry.roles)
+    ? entry.roles
+        .filter(Boolean)
+        .map((role) => (role === "gateway" ? "网关" : role === "client" ? "客户端" : role))
+    : [];
   const scopes = Array.isArray(entry.scopes) ? entry.scopes.filter(Boolean) : [];
   const scopesLabel =
     scopes.length > 0

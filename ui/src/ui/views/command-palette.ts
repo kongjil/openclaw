@@ -26,29 +26,29 @@ const PALETTE_ITEMS: PaletteItem[] = [
   ...SLASH_PALETTE_ITEMS,
   {
     id: "nav-overview",
-    label: "Overview",
+    label: "总览",
     icon: "barChart",
     category: "navigation",
     action: "nav:overview",
   },
   {
     id: "nav-sessions",
-    label: "Sessions",
+    label: "会话",
     icon: "fileText",
     category: "navigation",
     action: "nav:sessions",
   },
   {
     id: "nav-cron",
-    label: "Scheduled",
+    label: "定时",
     icon: "scrollText",
     category: "navigation",
     action: "nav:cron",
   },
-  { id: "nav-skills", label: "Skills", icon: "zap", category: "navigation", action: "nav:skills" },
+  { id: "nav-skills", label: "技能", icon: "zap", category: "navigation", action: "nav:skills" },
   {
     id: "nav-config",
-    label: "Settings",
+    label: "设置",
     icon: "settings",
     category: "navigation",
     action: "nav:config",
@@ -62,19 +62,19 @@ const PALETTE_ITEMS: PaletteItem[] = [
   },
   {
     id: "skill-shell",
-    label: "Shell Command",
+    label: "Shell 命令",
     icon: "monitor",
     category: "skills",
     action: "/skill shell",
-    description: "Run shell",
+    description: "运行 shell",
   },
   {
     id: "skill-debug",
-    label: "Debug Mode",
+    label: "调试模式",
     icon: "bug",
     category: "skills",
     action: "/verbose full",
-    description: "Toggle debug",
+    description: "切换调试",
   },
 ];
 
@@ -176,9 +176,9 @@ function handleKeydown(e: KeyboardEvent, props: CommandPaletteProps) {
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
-  search: "Search",
-  navigation: "Navigation",
-  skills: "Skills",
+  search: "搜索",
+  navigation: "导航",
+  skills: "技能",
 };
 
 function focusInput(el: Element | undefined) {

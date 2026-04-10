@@ -29,41 +29,41 @@ function renderAgentContextCard(
 ) {
   return html`
     <section class="card">
-      <div class="card-title">Agent Context</div>
+      <div class="card-title">Agent 上下文</div>
       <div class="card-sub">${subtitle}</div>
       <div class="agents-overview-grid" style="margin-top: 16px;">
         <div class="agent-kv">
-          <div class="label">Workspace</div>
+          <div class="label">工作区</div>
           <div>
             <button
               type="button"
               class="workspace-link mono"
               @click=${() => onSelectPanel("files")}
-              title="Open Files tab"
+              title="打开文件页签"
             >
               ${context.workspace}
             </button>
           </div>
         </div>
         <div class="agent-kv">
-          <div class="label">Primary Model</div>
+          <div class="label">主模型</div>
           <div class="mono">${context.model}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">Identity Name</div>
+          <div class="label">身份名称</div>
           <div>${context.identityName}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">Identity Avatar</div>
+          <div class="label">身份头像</div>
           <div>${context.identityAvatar}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">Skills Filter</div>
+          <div class="label">技能过滤器</div>
           <div>${context.skillsLabel}</div>
         </div>
         <div class="agent-kv">
-          <div class="label">Default</div>
-          <div>${context.isDefault ? "yes" : "no"}</div>
+          <div class="label">默认</div>
+          <div>${context.isDefault ? "是" : "否"}</div>
         </div>
       </div>
     </section>
@@ -163,34 +163,28 @@ export function renderAgentChannels(params: {
     : "never";
   return html`
     <section class="grid grid-cols-2">
-      ${renderAgentContextCard(
-        params.context,
-        "Workspace, identity, and model configuration.",
-        params.onSelectPanel,
-      )}
+      ${renderAgentContextCard(params.context, "工作区、身份与模型配置。", params.onSelectPanel)}
       <section class="card">
         <div class="row" style="justify-content: space-between;">
           <div>
-            <div class="card-title">Channels</div>
-            <div class="card-sub">Gateway-wide channel status snapshot.</div>
+            <div class="card-title">通道</div>
+            <div class="card-sub">网关范围的通道状态快照。</div>
           </div>
           <button class="btn btn--sm" ?disabled=${params.loading} @click=${params.onRefresh}>
-            ${params.loading ? "Refreshing…" : "Refresh"}
+            ${params.loading ? "刷新中…" : "刷新"}
           </button>
         </div>
-        <div class="muted" style="margin-top: 8px;">Last refresh: ${lastSuccessLabel}</div>
+        <div class="muted" style="margin-top: 8px;">上次刷新：${lastSuccessLabel}</div>
         ${params.error
           ? html`<div class="callout danger" style="margin-top: 12px;">${params.error}</div>`
           : nothing}
         ${!params.snapshot
           ? html`
-              <div class="callout info" style="margin-top: 12px">
-                Load channels to see live status.
-              </div>
+              <div class="callout info" style="margin-top: 12px">请先加载通道，查看实时状态。</div>
             `
           : nothing}
         ${entries.length === 0
-          ? html` <div class="muted" style="margin-top: 16px">No channels found.</div> `
+          ? html` <div class="muted" style="margin-top: 16px">未找到通道。</div> `
           : html`
               <div class="list" style="margin-top: 16px;">
                 ${entries.map((entry) => {
@@ -225,7 +219,7 @@ export function renderAgentChannels(params: {
                                   target="_blank"
                                   rel="noopener"
                                   style="color: var(--accent); font-size: 12px"
-                                  >Setup guide</a
+                                  >配置指南</a
                                 >
                               </div>
                             `
@@ -258,34 +252,30 @@ export function renderAgentCron(params: {
   const jobs = params.jobs.filter((job) => job.agentId === params.agentId);
   return html`
     <section class="grid grid-cols-2">
-      ${renderAgentContextCard(
-        params.context,
-        "Workspace and scheduling targets.",
-        params.onSelectPanel,
-      )}
+      ${renderAgentContextCard(params.context, "工作区与调度目标。", params.onSelectPanel)}
       <section class="card">
         <div class="row" style="justify-content: space-between;">
           <div>
-            <div class="card-title">Scheduler</div>
-            <div class="card-sub">Gateway cron status.</div>
+            <div class="card-title">调度器</div>
+            <div class="card-sub">网关 Cron 状态。</div>
           </div>
           <button class="btn btn--sm" ?disabled=${params.loading} @click=${params.onRefresh}>
-            ${params.loading ? "Refreshing…" : "Refresh"}
+            ${params.loading ? "刷新中…" : "刷新"}
           </button>
         </div>
         <div class="stat-grid" style="margin-top: 16px;">
           <div class="stat">
-            <div class="stat-label">Enabled</div>
+            <div class="stat-label">已启用</div>
             <div class="stat-value">
-              ${params.status ? (params.status.enabled ? "Yes" : "No") : "n/a"}
+              ${params.status ? (params.status.enabled ? "是" : "否") : "不可用"}
             </div>
           </div>
           <div class="stat">
-            <div class="stat-label">Jobs</div>
+            <div class="stat-label">任务数</div>
             <div class="stat-value">${params.status?.jobs ?? "n/a"}</div>
           </div>
           <div class="stat">
-            <div class="stat-label">Next wake</div>
+            <div class="stat-label">下次唤醒</div>
             <div class="stat-value">${formatNextRun(params.status?.nextWakeAtMs ?? null)}</div>
           </div>
         </div>
@@ -295,10 +285,10 @@ export function renderAgentCron(params: {
       </section>
     </section>
     <section class="card">
-      <div class="card-title">Agent Cron Jobs</div>
-      <div class="card-sub">Scheduled jobs targeting this agent.</div>
+      <div class="card-title">Agent Cron 任务</div>
+      <div class="card-sub">目标指向该 agent 的定时任务。</div>
       ${jobs.length === 0
-        ? html` <div class="muted" style="margin-top: 16px">No jobs assigned.</div> `
+        ? html` <div class="muted" style="margin-top: 16px">还没有分配任务。</div> `
         : html`
             <div class="list" style="margin-top: 16px;">
               ${jobs.map(
@@ -365,15 +355,15 @@ export function renderAgentFiles(params: {
     <section class="card">
       <div class="row" style="justify-content: space-between;">
         <div>
-          <div class="card-title">Core Files</div>
-          <div class="card-sub">Bootstrap persona, identity, and tool guidance.</div>
+          <div class="card-title">核心文件</div>
+          <div class="card-sub">Bootstrap 人设、身份信息与工具说明。</div>
         </div>
         <button
           class="btn btn--sm"
           ?disabled=${params.agentFilesLoading}
           @click=${() => params.onLoadFiles(params.agentId)}
         >
-          ${params.agentFilesLoading ? "Loading…" : "Refresh"}
+          ${params.agentFilesLoading ? "加载中…" : "刷新"}
         </button>
       </div>
       ${list
@@ -393,7 +383,7 @@ export function renderAgentFiles(params: {
             </div>
           `
         : files.length === 0
-          ? html` <div class="muted" style="margin-top: 16px">No files found.</div> `
+          ? html` <div class="muted" style="margin-top: 16px">未找到文件。</div> `
           : html`
               <div class="agent-tabs" style="margin-top: 14px;">
                 ${files.map((file) => {
@@ -414,7 +404,7 @@ export function renderAgentFiles(params: {
                 })}
               </div>
               ${!activeEntry
-                ? html` <div class="muted" style="margin-top: 16px">Select a file to edit.</div> `
+                ? html` <div class="muted" style="margin-top: 16px">请选择一个文件进行编辑。</div> `
                 : html`
                     <div class="agent-file-header" style="margin-top: 14px;">
                       <div>
@@ -423,7 +413,7 @@ export function renderAgentFiles(params: {
                       <div class="agent-file-actions">
                         <button
                           class="btn btn--sm"
-                          title="Preview rendered markdown"
+                          title="预览渲染后的 Markdown"
                           @click=${(e: Event) => {
                             const btn = e.currentTarget as HTMLElement;
                             const dialog = btn.closest(".card")?.querySelector("dialog");
@@ -446,7 +436,7 @@ export function renderAgentFiles(params: {
                           ?disabled=${params.agentFileSaving || !isDirty}
                           @click=${() => params.onFileSave(activeEntry.name)}
                         >
-                          ${params.agentFileSaving ? "Saving…" : "Save"}
+                          ${params.agentFileSaving ? "保存中…" : "保存"}
                         </button>
                       </div>
                     </div>
@@ -458,7 +448,7 @@ export function renderAgentFiles(params: {
                         `
                       : nothing}
                     <label class="field agent-file-field" style="margin-top: 12px;">
-                      <span>Content</span>
+                      <span>内容</span>
                       <textarea
                         class="agent-file-textarea"
                         .value=${draft}
@@ -490,7 +480,7 @@ export function renderAgentFiles(params: {
                           <div class="md-preview-dialog__actions">
                             <button
                               class="btn btn--sm md-preview-expand-btn"
-                              title="Toggle fullscreen"
+                              title="切换全屏"
                               @click=${(e: Event) => {
                                 const btn = e.currentTarget as HTMLElement;
                                 const panel = btn.closest(".md-preview-dialog__panel");
@@ -501,12 +491,12 @@ export function renderAgentFiles(params: {
                                 btn.classList.toggle("is-fullscreen", isFullscreen);
                               }}
                             >
-                              <span class="when-normal">${icons.maximize} Expand</span
-                              ><span class="when-fullscreen">${icons.minimize} Collapse</span>
+                              <span class="when-normal">${icons.maximize} 展开</span
+                              ><span class="when-fullscreen">${icons.minimize} 收起</span>
                             </button>
                             <button
                               class="btn btn--sm"
-                              title="Edit file"
+                              title="编辑文件"
                               @click=${(e: Event) => {
                                 (e.currentTarget as HTMLElement).closest("dialog")?.close();
                                 const textarea =
@@ -514,7 +504,7 @@ export function renderAgentFiles(params: {
                                 textarea?.focus();
                               }}
                             >
-                              ${icons.edit} Editor
+                              ${icons.edit} 编辑器
                             </button>
                             <button
                               class="btn btn--sm"
@@ -522,7 +512,7 @@ export function renderAgentFiles(params: {
                                 (e.currentTarget as HTMLElement).closest("dialog")?.close();
                               }}
                             >
-                              ${icons.x} Close
+                              ${icons.x} 关闭
                             </button>
                           </div>
                         </div>

@@ -16,11 +16,11 @@ import {
 import { analyzeConfigSchema, renderConfigForm, SECTION_META } from "./config-form.ts";
 
 const BORDER_RADIUS_LABELS: Record<BorderRadiusStop, string> = {
-  0: "None",
-  25: "Slight",
-  50: "Default",
-  75: "Round",
-  100: "Full",
+  0: "无",
+  25: "轻微",
+  50: "默认",
+  75: "圆润",
+  100: "完全",
 };
 
 export type ConfigProps = {
@@ -356,75 +356,75 @@ type SectionCategory = {
 const SECTION_CATEGORIES: SectionCategory[] = [
   {
     id: "core",
-    label: "Core",
+    label: "核心",
     sections: [
-      { key: "env", label: "Environment" },
-      { key: "auth", label: "Authentication" },
-      { key: "update", label: "Updates" },
-      { key: "meta", label: "Meta" },
-      { key: "logging", label: "Logging" },
-      { key: "diagnostics", label: "Diagnostics" },
-      { key: "cli", label: "Cli" },
-      { key: "secrets", label: "Secrets" },
+      { key: "env", label: "环境" },
+      { key: "auth", label: "认证" },
+      { key: "update", label: "更新" },
+      { key: "meta", label: "元数据" },
+      { key: "logging", label: "日志" },
+      { key: "diagnostics", label: "诊断" },
+      { key: "cli", label: "CLI" },
+      { key: "secrets", label: "密钥" },
     ],
   },
   {
     id: "ai",
-    label: "AI & Agents",
+    label: "AI 与 Agents",
     sections: [
-      { key: "agents", label: "Agents" },
-      { key: "models", label: "Models" },
-      { key: "skills", label: "Skills" },
-      { key: "tools", label: "Tools" },
-      { key: "memory", label: "Memory" },
-      { key: "session", label: "Session" },
+      { key: "agents", label: "代理" },
+      { key: "models", label: "模型" },
+      { key: "skills", label: "技能" },
+      { key: "tools", label: "工具" },
+      { key: "memory", label: "记忆" },
+      { key: "session", label: "会话" },
     ],
   },
   {
     id: "communication",
-    label: "Communication",
+    label: "通信",
     sections: [
-      { key: "channels", label: "Channels" },
-      { key: "messages", label: "Messages" },
-      { key: "broadcast", label: "Broadcast" },
-      { key: "talk", label: "Talk" },
-      { key: "audio", label: "Audio" },
+      { key: "channels", label: "通道" },
+      { key: "messages", label: "消息" },
+      { key: "broadcast", label: "广播" },
+      { key: "talk", label: "对讲" },
+      { key: "audio", label: "音频" },
     ],
   },
   {
     id: "automation",
-    label: "Automation",
+    label: "自动化",
     sections: [
-      { key: "commands", label: "Commands" },
-      { key: "hooks", label: "Hooks" },
-      { key: "bindings", label: "Bindings" },
+      { key: "commands", label: "命令" },
+      { key: "hooks", label: "钩子" },
+      { key: "bindings", label: "绑定" },
       { key: "cron", label: "Cron" },
-      { key: "approvals", label: "Approvals" },
-      { key: "plugins", label: "Plugins" },
+      { key: "approvals", label: "审批" },
+      { key: "plugins", label: "插件" },
     ],
   },
   {
     id: "infrastructure",
-    label: "Infrastructure",
+    label: "基础设施",
     sections: [
-      { key: "gateway", label: "Gateway" },
+      { key: "gateway", label: "网关" },
       { key: "web", label: "Web" },
-      { key: "browser", label: "Browser" },
-      { key: "nodeHost", label: "NodeHost" },
-      { key: "canvasHost", label: "CanvasHost" },
-      { key: "discovery", label: "Discovery" },
-      { key: "media", label: "Media" },
-      { key: "acp", label: "Acp" },
-      { key: "mcp", label: "Mcp" },
+      { key: "browser", label: "浏览器" },
+      { key: "nodeHost", label: "节点主机" },
+      { key: "canvasHost", label: "画布主机" },
+      { key: "discovery", label: "发现" },
+      { key: "media", label: "媒体" },
+      { key: "acp", label: "ACP" },
+      { key: "mcp", label: "MCP" },
     ],
   },
   {
     id: "appearance",
-    label: "Appearance",
+    label: "外观",
     sections: [
-      { key: "__appearance__", label: "Theme" },
-      { key: "ui", label: "UI" },
-      { key: "wizard", label: "Setup Wizard" },
+      { key: "__appearance__", label: "主题" },
+      { key: "ui", label: "界面" },
+      { key: "wizard", label: "设置向导" },
     ],
   },
 ];
@@ -563,17 +563,17 @@ function renderDiffValue(path: string, value: unknown, _uiHints: ConfigUiHints):
 
 type ThemeOption = { id: ThemeName; label: string; description: string; icon: TemplateResult };
 const THEME_OPTIONS: ThemeOption[] = [
-  { id: "claw", label: "Claw", description: "Chroma family", icon: icons.zap },
-  { id: "knot", label: "Knot", description: "Black & red", icon: icons.link },
-  { id: "dash", label: "Dash", description: "Chocolate blueprint", icon: icons.barChart },
+  { id: "claw", label: "Claw", description: "Chroma 主题族", icon: icons.zap },
+  { id: "knot", label: "Knot", description: "黑红配色", icon: icons.link },
+  { id: "dash", label: "Dash", description: "巧克力蓝图", icon: icons.barChart },
 ];
 
 function renderAppearanceSection(props: ConfigProps) {
   return html`
     <div class="settings-appearance">
       <div class="settings-appearance__section">
-        <h3 class="settings-appearance__heading">Theme</h3>
-        <p class="settings-appearance__hint">Choose a theme family.</p>
+        <h3 class="settings-appearance__heading">主题</h3>
+        <p class="settings-appearance__hint">选择一个主题族。</p>
         <div class="settings-theme-grid">
           ${THEME_OPTIONS.map(
             (opt) => html`
@@ -605,8 +605,8 @@ function renderAppearanceSection(props: ConfigProps) {
       </div>
 
       <div class="settings-appearance__section">
-        <h3 class="settings-appearance__heading">Roundness</h3>
-        <p class="settings-appearance__hint">Adjust corner radius across the UI.</p>
+        <h3 class="settings-appearance__heading">圆角</h3>
+        <p class="settings-appearance__hint">调整整个界面的圆角半径。</p>
         <div class="settings-roundness">
           <div class="settings-roundness__options">
             ${BORDER_RADIUS_STOPS.map(
@@ -730,7 +730,7 @@ export function renderConfig(props: ConfigProps) {
     .map((k) => ({ key: k, label: k.charAt(0).toUpperCase() + k.slice(1) }));
 
   const otherCategory: SectionCategory | null =
-    extraSections.length > 0 ? { id: "other", label: "Other", sections: extraSections } : null;
+    extraSections.length > 0 ? { id: "other", label: "其他", sections: extraSections } : null;
 
   const isVirtualSection =
     includeVirtualSections &&
@@ -751,7 +751,7 @@ export function renderConfig(props: ConfigProps) {
   const effectiveSubsection = null;
 
   const topTabs = [
-    { key: null as string | null, label: props.navRootLabel ?? "Settings" },
+    { key: null as string | null, label: props.navRootLabel ?? "设置" },
     ...[...visibleCategories, ...(otherCategory ? [otherCategory] : [])].flatMap((cat) =>
       cat.sections.map((s) => ({ key: s.key, label: s.label })),
     ),
@@ -792,16 +792,16 @@ export function renderConfig(props: ConfigProps) {
                     <button
                       class="config-mode-toggle__btn ${formMode === "form" ? "active" : ""}"
                       ?disabled=${props.schemaLoading || !props.schema}
-                      title=${formUnsafe ? "Form view can't safely edit some fields" : ""}
+                      title=${formUnsafe ? "表单视图无法安全编辑某些字段" : ""}
                       @click=${() => props.onFormModeChange("form")}
                     >
-                      Form
+                      表单
                     </button>
                     <button
                       class="config-mode-toggle__btn ${formMode === "raw" ? "active" : ""}"
                       @click=${() => props.onFormModeChange("raw")}
                     >
-                      Raw
+                      原始
                     </button>
                   </div>
                 `
@@ -810,35 +810,35 @@ export function renderConfig(props: ConfigProps) {
               ? html`
                   <span class="config-changes-badge"
                     >${formMode === "raw"
-                      ? "Unsaved changes"
-                      : `${diff.length} unsaved change${diff.length !== 1 ? "s" : ""}`}</span
+                      ? "有未保存的更改"
+                      : `${diff.length} 处未保存的更改`}</span
                   >
                 `
-              : html` <span class="config-status muted">No changes</span> `}
+              : html` <span class="config-status muted">没有更改</span> `}
           </div>
           <div class="config-actions__right">
             ${props.onOpenFile
               ? html`
                   <button
                     class="btn btn--sm"
-                    title=${props.configPath ? `Open ${props.configPath}` : "Open config file"}
+                    title=${props.configPath ? `打开 ${props.configPath}` : "打开配置文件"}
                     @click=${props.onOpenFile}
                   >
-                    ${icons.fileText} Open
+                    ${icons.fileText} 打开
                   </button>
                 `
               : nothing}
             <button class="btn btn--sm" ?disabled=${props.loading} @click=${props.onReload}>
-              ${props.loading ? "Loading…" : "Reload"}
+              ${props.loading ? "加载中…" : "重新加载"}
             </button>
             <button class="btn btn--sm primary" ?disabled=${!canSave} @click=${props.onSave}>
-              ${props.saving ? "Saving…" : "Save"}
+              ${props.saving ? "保存中…" : "保存"}
             </button>
             <button class="btn btn--sm" ?disabled=${!canApply} @click=${props.onApply}>
-              ${props.applying ? "Applying…" : "Apply"}
+              ${props.applying ? "应用中…" : "应用"}
             </button>
             <button class="btn btn--sm" ?disabled=${!canUpdate} @click=${props.onUpdate}>
-              ${props.updating ? "Updating…" : "Update"}
+              ${props.updating ? "更新中…" : "更新"}
             </button>
           </div>
         </div>
@@ -861,8 +861,8 @@ export function renderConfig(props: ConfigProps) {
                     <input
                       type="text"
                       class="config-search__input"
-                      placeholder="Search settings..."
-                      aria-label="Search settings"
+                      placeholder="搜索设置…"
+                      aria-label="搜索设置"
                       .value=${props.searchQuery}
                       @input=${(e: Event) =>
                         props.onSearchChange((e.target as HTMLInputElement).value)}
@@ -871,7 +871,7 @@ export function renderConfig(props: ConfigProps) {
                       ? html`
                           <button
                             class="config-search__clear"
-                            aria-label="Clear search"
+                            aria-label="清空搜索"
                             @click=${() => props.onSearchChange("")}
                           >
                             ×
@@ -883,7 +883,7 @@ export function renderConfig(props: ConfigProps) {
               `
             : nothing}
 
-          <div class="config-top-tabs__scroller" role="tablist" aria-label="Settings sections">
+          <div class="config-top-tabs__scroller" role="tablist" aria-label="设置分区">
             ${topTabs.map(
               (tab) => html`
                 <button
@@ -921,7 +921,7 @@ export function renderConfig(props: ConfigProps) {
                   <line x1="12" y1="17" x2="12.01" y2="17"></line>
                 </svg>
                 <span class="config-validity-warning__text"
-                  >Your configuration is invalid. Some settings may not work as expected.</span
+                  >当前配置无效，某些设置可能无法按预期工作。</span
                 >
                 <button
                   class="btn btn--sm"
@@ -941,7 +941,7 @@ export function renderConfig(props: ConfigProps) {
           ? html`
               <details class="config-diff">
                 <summary class="config-diff__summary">
-                  <span>View ${diff.length} pending change${diff.length !== 1 ? "s" : ""}</span>
+                  <span>查看 ${diff.length} 项待处理更改</span>
                   <svg
                     class="config-diff__chevron"
                     viewBox="0 0 24 24"
@@ -993,7 +993,7 @@ export function renderConfig(props: ConfigProps) {
                         class="config-env-peek-btn ${envSensitiveVisible
                           ? "config-env-peek-btn--active"
                           : ""}"
-                        title=${envSensitiveVisible ? "Hide env values" : "Reveal env values"}
+                        title=${envSensitiveVisible ? "隐藏环境变量值" : "显示环境变量值"}
                         @click=${() => {
                           cvs.envRevealed = !cvs.envRevealed;
                           requestUpdate();
@@ -1032,7 +1032,7 @@ export function renderConfig(props: ConfigProps) {
                     ? html`
                         <div class="config-loading">
                           <div class="config-loading__spinner"></div>
-                          <span>Loading schema…</span>
+                          <span>正在加载 schema…</span>
                         </div>
                       `
                     : renderConfigForm({
@@ -1065,26 +1065,23 @@ export function renderConfig(props: ConfigProps) {
                     ${formUnsafe
                       ? html`
                           <div class="callout info" style="margin-bottom: 12px">
-                            Your config contains fields the form editor can't safely represent. Use
-                            Raw mode to edit those entries.
+                            当前配置包含表单编辑器无法安全表示的字段，请切换到原始模式编辑这些条目。
                           </div>
                         `
                       : nothing}
                     <div class="field config-raw-field">
                       <span style="display:flex;align-items:center;gap:8px;">
-                        Raw config (JSON/JSON5)
+                        原始配置（JSON/JSON5）
                         ${sensitiveCount > 0
                           ? html`
                               <span class="pill pill--sm"
                                 >${sensitiveCount} secret${sensitiveCount === 1 ? "" : "s"}
-                                ${blurred ? "redacted" : "visible"}</span
+                                ${blurred ? "已隐藏" : "可见"}</span
                               >
                               <button
                                 class="btn btn--icon config-raw-toggle ${blurred ? "" : "active"}"
-                                title=${blurred
-                                  ? "Reveal sensitive values"
-                                  : "Hide sensitive values"}
-                                aria-label="Toggle raw config redaction"
+                                title=${blurred ? "显示敏感值" : "隐藏敏感值"}
+                                aria-label="切换原始配置脱敏显示"
                                 aria-pressed=${!blurred}
                                 @click=${() => {
                                   cvs.rawRevealed = !cvs.rawRevealed;
@@ -1105,7 +1102,7 @@ export function renderConfig(props: ConfigProps) {
                           `
                         : html`
                             <textarea
-                              placeholder="Raw config (JSON/JSON5)"
+                              placeholder="原始配置（JSON/JSON5）"
                               .value=${props.raw}
                               @input=${(e: Event) => {
                                 props.onRawChange((e.target as HTMLTextAreaElement).value);
